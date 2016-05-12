@@ -1,12 +1,14 @@
 'use strict';
 
 import redis from 'redis';
+import {EventEmitter} from 'events';
 
 const SCAN_LIMIT = 1000;
 
-class Redis {
+class Redis extends EventEmitter {
 
 	constructor(options) {
+		super();
 		this._client = redis.createClient(options);
 	}
 
@@ -76,6 +78,7 @@ class Redis {
 							if (err) {
 								callback(err);
 							} else {
+								self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
 								processCycle();
 							}
 						});
