@@ -47,6 +47,8 @@ class Redis {
 
 	scan(pattern, delegate, callback) {
 
+		const self = this;
+
 		let cursor = '0';
 		let cycle = 0;
 
@@ -54,7 +56,7 @@ class Redis {
 
 		function _scan(callback) {
 			//noinspection JSUnresolvedFunction
-			this._client.scan(
+			self._client.scan(
 				cursor,
 				'MATCH', pattern,
 				'COUNT', SCAN_LIMIT,
@@ -85,7 +87,7 @@ class Redis {
 						if (cursor === '0') {
 							callback();
 						} else {
-							this.scan(callback);
+							_scan(callback);
 						}
 					}
 				}
