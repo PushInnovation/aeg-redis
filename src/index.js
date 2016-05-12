@@ -43,6 +43,7 @@ class Redis extends EventEmitter {
 	scanDel(pattern, callback) {
 		const self = this;
 		this.scan(pattern, (keys, callback) => {
+			self.emit('info', {message: 'redis#scanDel', data: {keys}});
 			self._client.del(keys, callback);
 		}, callback);
 	}
