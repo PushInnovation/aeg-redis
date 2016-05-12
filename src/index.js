@@ -22,6 +22,10 @@ class Redis {
 		this._client.del(key, callback);
 	}
 
+	smembers(key, callback) {
+		this._client.smembers(key, callback);
+	}
+
 	scanDel(pattern, callback) {
 		const self = this;
 		this._client.scan(pattern, (keys, callback) => {
