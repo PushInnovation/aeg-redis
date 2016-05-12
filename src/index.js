@@ -84,6 +84,7 @@ class Redis extends EventEmitter {
 							}
 						});
 					} else {
+						self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
 						processCycle();
 					}
 
