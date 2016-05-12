@@ -85,7 +85,7 @@ class Redis {
 						if (cursor === '0') {
 							callback();
 						} else {
-							_scan(callback);
+							this.scan(callback);
 						}
 					}
 				}
