@@ -22,12 +22,20 @@ class Redis {
 		this._client.del(key, callback);
 	}
 
-	hgetall(key, callback) {
-		this._client.hgetall(key, callback);
-	}
-
 	smembers(key, callback) {
 		this._client.smembers(key, callback);
+	}
+
+	sadd(key, value, callback) {
+		this._client.sadd(key, value, callback);
+	}
+
+	srem(key, value, callback) {
+		this._client.srem(key, value, callback);
+	}
+
+	hgetall(key, callback) {
+		this._client.hgetall(key, callback);
 	}
 
 	scanDel(pattern, callback) {
