@@ -1988,7 +1988,7 @@
     },
     "redis": {
       "version": "2.6.0-2",
-      "from": "redis@>=2.6.0-2 <3.0.0",
+      "from": "redis@latest",
       "resolved": "https://registry.npmjs.org/redis/-/redis-2.6.0-2.tgz"
     },
     "redis-commands": {
