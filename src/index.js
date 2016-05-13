@@ -14,19 +14,33 @@ class Redis extends EventEmitter {
 
 	/* transactions */
 
-	begin() {
-		this._multi = this._client.multi();
+	begin(callback) {
+		if (!this._multi) {
+			this._multi = this._client.multi();
+			callback();
+		} else {
+			callback(new Error('Transaction already open'));
+		}
 	}
 
 	commit(callback) {
-		this._multi.exec((err) => {
-			callback(err);
-		});
+		if (this._multi) {
+			this._multi.exec((err) => {
+				callback(err);
+			});
+		} else {
+			callback(new Error('No transaction open'));
+		}
 	}
 
-	rollback() {
-		//noinspection JSUnresolvedFunction
-		this._multi.discard();
+	rollback(callback) {
+		if (this._multi) {
+			//noinspection JSUnresolvedFunction
+			this._multi.discard();
+			callback();
+		} else {
+			callback(new Error('No transaction open'));
+		}
 	}
 
 	/* standard keys */
@@ -49,7 +63,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.set(key, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.set(key, value, callback);
 		}
@@ -65,7 +79,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.incrby(key, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.incrby(key, value, callback);
 		}
@@ -81,7 +95,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.incrbyfloat(key, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.incrbyfloat(key, value, callback);
 		}
@@ -98,7 +112,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.hincrby(key, hashKey, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.hincrby(key, hashKey, value, callback);
 		}
@@ -115,7 +129,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.hincrbyfloat(key, hashKey, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.hincrbyfloat(key, hashKey, value, callback);
 		}
@@ -131,7 +145,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.hmset(key, hash);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.hmset(key, hash, callback);
 		}
@@ -140,6 +154,7 @@ class Redis extends EventEmitter {
 	del(key, callback) {
 		if (this._multi) {
 			this._multi.del(key);
+			callback();
 		} else {
 			this._client.del(key, callback);
 		}
@@ -159,7 +174,7 @@ class Redis extends EventEmitter {
 
 		if (this._multi) {
 			this._multi.sadd(key, value);
-			this._checkExpiry(key, options);
+			this._checkExpiry(key, options, callback);
 		} else {
 			this._client.sadd(key, value, callback);
 		}
@@ -168,6 +183,7 @@ class Redis extends EventEmitter {
 	srem(key, value, callback) {
 		if (this._multi) {
 			this._multi.srem(key, value);
+			callback();
 		} else {
 			this._client.srem(key, value, callback);
 		}
@@ -183,6 +199,7 @@ class Redis extends EventEmitter {
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
 			if (self._multi) {
 				self._multi.del(keys);
+				callback();
 			} else {
 				self._client.del(keys, callback);
 			}
@@ -241,15 +258,16 @@ class Redis extends EventEmitter {
 		}
 	}
 
-	_checkExpiry(key, options) {
+	_checkExpiry(key, options, callback) {
 		//noinspection JSUnresolvedVariable
 		if (options && options.expire) {
 			if (this._multi) {
 				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
 				this._multi.expire(key, options.expire);
+				callback();
 			} else {
 				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
-				this._client.expire(key, options.expire);
+				this._client.expire(key, options.expire, callback);
 			}
 		}
 	}
