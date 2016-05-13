@@ -14,6 +14,7 @@ class Redis extends EventEmitter {
 
 	/* transactions */
 
+	//noinspection JSUnusedGlobalSymbols
 	begin(callback) {
 		if (!this._multi) {
 			this._multi = this._client.multi();
@@ -23,6 +24,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	commit(callback) {
 		if (this._multi) {
 			this._multi.exec((err) => {
@@ -33,6 +35,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	rollback(callback) {
 		if (this._multi) {
 			//noinspection JSUnresolvedFunction
@@ -45,14 +48,17 @@ class Redis extends EventEmitter {
 
 	/* standard keys */
 
+	//noinspection JSUnusedGlobalSymbols
 	exists(key, callback) {
 		this._client.exists(key, callback);
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	get(key, callback) {
 		this._client.get(key, callback);
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	set(key, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -69,6 +75,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	incrby(key, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -85,6 +92,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	incrbyfloat(key, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -101,6 +109,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	hincrby(key, hashKey, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -118,6 +127,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	hincrbyfloat(key, hashKey, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -135,6 +145,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	hmset(key, hash, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -160,10 +171,12 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	smembers(key, callback) {
 		this._client.smembers(key, callback);
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	sadd(key, value, options, callback) {
 
 		let args = Array.prototype.slice.call(arguments);
@@ -180,6 +193,7 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	srem(key, value, callback) {
 		if (this._multi) {
 			this._multi.srem(key, value);
@@ -189,10 +203,12 @@ class Redis extends EventEmitter {
 		}
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	hgetall(key, callback) {
 		this._client.hgetall(key, callback);
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	scanDel(pattern, callback) {
 		const self = this;
 		this.scan(pattern, (keys, callback) => {
