@@ -28,6 +28,7 @@ class Redis extends EventEmitter {
 	commit(callback) {
 		if (this._multi) {
 			this._multi.exec((err) => {
+				this._multi = null;
 				callback(err);
 			});
 		} else {
@@ -40,6 +41,7 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 			//noinspection JSUnresolvedFunction
 			this._multi.discard();
+			this._multi = null;
 			callback();
 		} else {
 			callback(new Error('No transaction open'));
