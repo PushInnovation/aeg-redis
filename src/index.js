@@ -12,28 +12,181 @@ class Redis extends EventEmitter {
 		this._client = redis.createClient(options);
 	}
 
+	/* transactions */
+
+	begin(callback) {
+		if (!this._multi) {
+			this._multi = this._client.multi();
+			callback();
+		} else {
+			callback(new Error('Transaction already open'));
+		}
+	}
+
+	commit(callback) {
+		if (this._multi) {
+			this._multi.exec((err) => {
+				callback(err);
+			});
+		} else {
+			callback(new Error('No transaction open'));
+		}
+	}
+
+	rollback(callback) {
+		if (this._multi) {
+			//noinspection JSUnresolvedFunction
+			this._multi.discard();
+			callback();
+		} else {
+			callback(new Error('No transaction open'));
+		}
+	}
+
+	/* standard keys */
+
+	exists(key, callback) {
+		this._client.exists(key, callback);
+	}
+
 	get(key, callback) {
 		this._client.get(key, callback);
 	}
 
-	set(key, value, callback) {
-		this._client.set(key, value, callback);
+	set(key, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.set(key, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.set(key, value, callback);
+		}
+	}
+
+	incrby(key, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.incrby(key, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.incrby(key, value, callback);
+		}
+	}
+
+	incrbyfloat(key, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.incrbyfloat(key, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.incrbyfloat(key, value, callback);
+		}
+	}
+
+	hincrby(key, hashKey, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		hashKey = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.hincrby(key, hashKey, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.hincrby(key, hashKey, value, callback);
+		}
+	}
+
+	hincrbyfloat(key, hashKey, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		hashKey = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.hincrbyfloat(key, hashKey, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.hincrbyfloat(key, hashKey, value, callback);
+		}
+	}
+
+	hmset(key, hash, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		hash = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.hmset(key, hash);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.hmset(key, hash, callback);
+		}
 	}
 
 	del(key, callback) {
-		this._client.del(key, callback);
+		if (this._multi) {
+			this._multi.del(key);
+			callback();
+		} else {
+			this._client.del(key, callback);
+		}
 	}
 
 	smembers(key, callback) {
 		this._client.smembers(key, callback);
 	}
 
-	sadd(key, value, callback) {
-		this._client.sadd(key, value, callback);
+	sadd(key, value, options, callback) {
+
+		let args = Array.prototype.slice.call(arguments);
+		key = args.shift();
+		value = args.shift();
+		callback = args.pop();
+		options = args.length > 0 ? args.shift() : null;
+
+		if (this._multi) {
+			this._multi.sadd(key, value);
+			this._checkExpiry(key, options, callback);
+		} else {
+			this._client.sadd(key, value, callback);
+		}
 	}
 
 	srem(key, value, callback) {
-		this._client.srem(key, value, callback);
+		if (this._multi) {
+			this._multi.srem(key, value);
+			callback();
+		} else {
+			this._client.srem(key, value, callback);
+		}
 	}
 
 	hgetall(key, callback) {
@@ -44,7 +197,12 @@ class Redis extends EventEmitter {
 		const self = this;
 		this.scan(pattern, (keys, callback) => {
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
-			self._client.del(keys, callback);
+			if (self._multi) {
+				self._multi.del(keys);
+				callback();
+			} else {
+				self._client.del(keys, callback);
+			}
 		}, callback);
 	}
 
@@ -97,6 +255,20 @@ class Redis extends EventEmitter {
 					}
 				}
 			);
+		}
+	}
+
+	_checkExpiry(key, options, callback) {
+		//noinspection JSUnresolvedVariable
+		if (options && options.expire) {
+			if (this._multi) {
+				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
+				this._multi.expire(key, options.expire);
+				callback();
+			} else {
+				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
+				this._client.expire(key, options.expire, callback);
+			}
 		}
 	}
 
