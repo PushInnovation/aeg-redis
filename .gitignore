@@ -30,8 +30,8 @@ node_modules
 
 ~$*
 
-.idea
-
 xunit.xml
 
-lib
+/lib
+
+/.idea/workspace.xml
