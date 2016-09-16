@@ -1,3 +1,4 @@
+import should from 'should';
 import Redis from '../../src/index';
 
 const redis = new Redis({
@@ -5,17 +6,36 @@ const redis = new Redis({
 	port: 32769
 });
 
-describe('#smembers()', () => {
+describe('#index()', async () => {
 
-	it('should return empty array', (done) => {
+	it('should set a key value', async () => {
 
-		redis.smembers('nokey', (err, result) => {
+		await redis.set('test1', 1);
+		const val = await redis.get('test1');
+		should.exist(val);
+		val.should.be.equal('1');
 
-			result.should.be.an.Array;
-			result.length.should.be.equal(0);
-			done(err);
+	});
 
-		});
+	it('key should exist', async () => {
+
+		const result = await redis.exists('test1');
+		result.should.be.ok;
+
+	});
+
+	it('should remove a key value', async () => {
+
+		await redis.del('test1');
+		const val = await redis.get('test1');
+		should.not.exist(val);
+
+	});
+
+	it('key should not exist', async () => {
+
+		const result = await redis.exists('test1');
+		result.should.not.be.ok;
 
 	});
 
