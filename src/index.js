@@ -407,7 +407,18 @@ class Redis extends EventEmitter {
 	}
 
 	/**
-	 * Set the expiry
+	 * Get the remaining time of a key
+	 * @param key
+	 * @return {*}
+	 */
+	async ttl (key) {
+
+		return this._client.ttlAsync(key);
+
+	}
+
+	/**
+	 * Set the expiry in seconds
 	 * @param {string} key
 	 * @param {Object} [options]
 	 * @return {*}
