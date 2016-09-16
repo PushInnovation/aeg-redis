@@ -35,3 +35,5 @@ xunit.xml
 /lib
 
 /.idea/workspace.xml
+
+test-results.xml
