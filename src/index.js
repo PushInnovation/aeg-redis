@@ -1,293 +1,445 @@
-'use strict';
-
 import redis from 'redis';
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
+import Promise from 'bluebird';
 
 const SCAN_LIMIT = 1000;
 
 class Redis extends EventEmitter {
 
-	constructor(options) {
+	/**
+	 * Constructor
+	 * @param {Object} [options]
+	 */
+	constructor (options) {
+
 		super();
 		this._client = redis.createClient(options);
+		Promise.promisifyAll(this._client);
+
 	}
 
 	/* transactions */
 
-	//noinspection JSUnusedGlobalSymbols
-	begin(callback) {
+	/**
+	 * Begin a transaction
+	 */
+	begin () {
+
 		if (!this._multi) {
+
 			this._multi = this._client.multi();
-			callback();
+
 		} else {
-			callback(new Error('Transaction already open'));
+
+			throw new Error('Transaction already open');
+
 		}
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	commit(callback) {
-		if (this._multi) {
-			this._multi.exec((err) => {
-				this._multi = null;
-				callback(err);
-			});
-		} else {
-			callback(new Error('No transaction open'));
+	/**
+	 * Commit a transaction
+	 */
+	async commit () {
+
+		if (!this._multi) {
+
+			throw new Error('No transaction open');
+
 		}
+
+		try {
+
+			const exec = Promise.promisify(this._multi.exec, {context: this._multi});
+			await exec();
+			this._multi = null;
+
+		} catch (ex) {
+
+			this._multi = null;
+			throw ex;
+
+		}
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	rollback(callback) {
+	/**
+	 * Roll the transaction back
+	 */
+	rollback () {
+
 		if (this._multi) {
-			//noinspection JSUnresolvedFunction
+
 			this._multi.discard();
 			this._multi = null;
-			callback();
+
 		} else {
-			callback(new Error('No transaction open'));
+
+			throw new Error('No transaction open');
+
 		}
+
 	}
 
 	/* standard keys */
 
-	//noinspection JSUnusedGlobalSymbols
-	exists(key, callback) {
-		this._client.exists(key, callback);
+	/**
+	 * Key exists
+	 * @param {string} key
+	 */
+	async exists (key) {
+
+		return this._client.existsAsync(key);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	get(key, callback) {
-		this._client.get(key, callback);
+	/**
+	 * Get a key value
+	 * @param {string} key
+	 */
+	async get (key) {
+
+		return this._client.getAsync(key);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	set(key, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Set a key value
+	 * @param {string} key
+	 * @param {string | number} value
+	 * @param {Object} [options]
+	 */
+	async set (key, value, options) {
 
 		if (this._multi) {
+
 			this._multi.set(key, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.set(key, value, callback);
+
+			await this._client.setAsync(key, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	incrby(key, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Increment an integer value
+	 * @param {string} key
+	 * @param {number} value
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async incrby (key, value, options) {
 
 		if (this._multi) {
+
 			this._multi.incrby(key, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.incrby(key, value, callback);
+
+			await this._client.incrbyAsync(key, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	incrbyfloat(key, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Increment a float value
+	 * @param {string} key
+	 * @param {number} value
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async incrbyfloat (key, value, options) {
 
 		if (this._multi) {
+
 			this._multi.incrbyfloat(key, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.incrbyfloat(key, value, callback);
+
+			await this._client.incrbyfloatAsync(key, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	hincrby(key, hashKey, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		hashKey = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Increment an integer value in a hash set
+	 * @param {string} key
+	 * @param {string} hashKey
+	 * @param {number} value
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async hincrby (key, hashKey, value, options) {
 
 		if (this._multi) {
+
 			this._multi.hincrby(key, hashKey, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.hincrby(key, hashKey, value, callback);
+
+			await this._client.hincrbyAsync(key, hashKey, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	hincrbyfloat(key, hashKey, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		hashKey = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Increment a float value in a hash set
+	 * @param {string} key
+	 * @param {string} hashKey
+	 * @param {number} value
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async hincrbyfloat (key, hashKey, value, options) {
 
 		if (this._multi) {
+
 			this._multi.hincrbyfloat(key, hashKey, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.hincrbyfloat(key, hashKey, value, callback);
+
+			await this._client.hincrbyfloatAsync(key, hashKey, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	hmset(key, hash, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		hash = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Hash map set
+	 * @param {string} key
+	 * @param {Object | *[] } hash
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async hmset (key, hash, options) {
 
 		if (this._multi) {
+
 			this._multi.hmset(key, hash);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.hmset(key, hash, callback);
+
+			await this._client.hmsetAsync(key, hash);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	del(key, callback) {
+	/**
+	 * Get a hash set
+	 * @param {string} key
+	 * @return {*}
+	 */
+	async hgetall (key) {
+
+		return this._client.hgetallAsync(key);
+
+	}
+
+	/**
+	 * Delete a key
+	 * @param {string} key
+	 * @return {*}
+	 */
+	async del (key) {
+
 		if (this._multi) {
+
 			this._multi.del(key);
-			callback();
+
 		} else {
-			this._client.del(key, callback);
+
+			return this._client.delAsync(key);
+
 		}
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	smembers(key, callback) {
-		this._client.smembers(key, callback);
-	}
-
-	//noinspection JSUnusedGlobalSymbols
-	sadd(key, value, options, callback) {
-
-		let args = Array.prototype.slice.call(arguments);
-		key = args.shift();
-		value = args.shift();
-		callback = args.pop();
-		options = args.length > 0 ? args.shift() : null;
+	/**
+	 * Add to a set
+	 * @param {string} key
+	 * @param {string | number | *[]} value
+	 * @param {Object} [options]
+	 * @return {*}
+	 */
+	async sadd (key, value, options) {
 
 		if (this._multi) {
+
 			this._multi.sadd(key, value);
-			this._checkExpiry(key, options, callback);
+
 		} else {
-			this._client.sadd(key, value, callback);
+
+			await this._client.saddAsync(key, value);
+
 		}
+
+		return this._checkExpiry(key, options);
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	srem(key, value, callback) {
+	/**
+	 * Get a set
+	 * @param {string} key
+	 * @return {*}
+	 */
+	async smembers (key) {
+
+		return this._client.smembersAsync(key);
+
+	}
+
+	/**
+	 * Remove from set
+	 * @param {string} key
+	 * @param {string | number} value
+	 * @return {*}
+	 */
+	async srem (key, value) {
+
 		if (this._multi) {
+
 			this._multi.srem(key, value);
-			callback();
+
 		} else {
-			this._client.srem(key, value, callback);
+
+			return this._client.sremAsync(key, value);
+
 		}
+
 	}
 
-	//noinspection JSUnusedGlobalSymbols
-	hgetall(key, callback) {
-		this._client.hgetall(key, callback);
-	}
+	/**
+	 * Scan and delete keys
+	 * @param {string} pattern
+	 * @return {*}
+	 */
+	async scanDel (pattern) {
 
-	//noinspection JSUnusedGlobalSymbols
-	scanDel(pattern, callback) {
 		const self = this;
-		this.scan(pattern, (keys, callback) => {
+
+		return this.scan(pattern, async (keys) => {
+
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
+
 			if (self._multi) {
+
 				self._multi.del(keys);
-				callback();
+
 			} else {
-				self._client.del(keys, callback);
+
+				return self._client.delAsync(keys);
+
 			}
-		}, callback);
+
+		});
+
 	}
 
-	scan(pattern, delegate, callback) {
+	/**
+	 * Scan keys
+	 * @param {string} pattern
+	 * @param {function} delegate
+	 */
+	async scan (pattern, delegate) {
 
 		const self = this;
 
 		let cursor = '0';
 		let cycle = 0;
 
-		_scan(callback);
+		return _scan();
 
-		function _scan(callback) {
-			//noinspection JSUnresolvedFunction
-			self._client.scan(
+		async function _scan () {
+
+			const res = await self._client.scanAsync(
 				cursor,
 				'MATCH', pattern,
-				'COUNT', SCAN_LIMIT,
-				(err, res) => {
+				'COUNT', SCAN_LIMIT);
 
-					if (err) {
-						return callback(err);
-					}
+			cursor = res[0];
+			cycle++;
 
-					cursor = res[0];
-					cycle++;
+			const keys = res[1];
 
-					const keys = res[1];
+			if (keys.length > 0) {
 
-					if (keys.length > 0) {
-						delegate(keys, (err) => {
-							if (err) {
-								callback(err);
-							} else {
-								self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
-								processCycle();
-							}
-						});
-					} else {
-						self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
-						processCycle();
-					}
+				await delegate(keys);
+				self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
+				await processCycle();
 
-					function processCycle() {
-						if (cursor === '0') {
-							callback();
-						} else {
-							_scan(callback);
-						}
-					}
+			} else {
+
+				self.emit('info', {message: 'redis#scan', data: {cycle, scanned: SCAN_LIMIT * cycle}});
+				await processCycle();
+
+			}
+
+			async function processCycle () {
+
+				if (cursor !== '0') {
+
+					await _scan();
+
 				}
-			);
+
+			}
+
 		}
+
 	}
 
-	_checkExpiry(key, options, callback) {
-		//noinspection JSUnresolvedVariable
+	/**
+	 * Get the remaining time of a key
+	 * @param key
+	 * @return {*}
+	 */
+	async ttl (key) {
+
+		return this._client.ttlAsync(key);
+
+	}
+
+	/**
+	 * Set the expiry in seconds
+	 * @param {string} key
+	 * @param {Object} [options]
+	 * @return {*}
+	 * @private
+	 */
+	async _checkExpiry (key, options) {
+
 		if (options && options.expire) {
+
 			if (this._multi) {
-				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
+
 				this._multi.expire(key, options.expire);
-				callback();
+
 			} else {
-				//noinspection JSUnresolvedVariable,JSUnresolvedFunction
-				this._client.expire(key, options.expire, callback);
+
+				return this._client.expireAsync(key, options.expire);
+
 			}
+
 		}
+
 	}
 
 }
