@@ -237,6 +237,17 @@ class Redis extends EventEmitter {
 	}
 
 	/**
+	 * Get a hash set
+	 * @param {string} key
+	 * @return {*}
+	 */
+	async hgetall (key) {
+
+		return this._client.hgetallAsync(key);
+
+	}
+
+	/**
 	 * Delete a key
 	 * @param {string} key
 	 * @return {*}
@@ -256,20 +267,9 @@ class Redis extends EventEmitter {
 	}
 
 	/**
-	 * Get a set
-	 * @param {string} key
-	 * @return {*}
-	 */
-	async smembers (key) {
-
-		return this._client.smembersAsync(key);
-
-	}
-
-	/**
 	 * Add to a set
 	 * @param {string} key
-	 * @param {string | number} value
+	 * @param {string | number | *[]} value
 	 * @param {Object} [options]
 	 * @return {*}
 	 */
@@ -285,6 +285,17 @@ class Redis extends EventEmitter {
 			return this._client.saddAsync(key, value);
 
 		}
+
+	}
+
+	/**
+	 * Get a set
+	 * @param {string} key
+	 * @return {*}
+	 */
+	async smembers (key) {
+
+		return this._client.smembersAsync(key);
 
 	}
 
@@ -305,17 +316,6 @@ class Redis extends EventEmitter {
 			return this._client.sremAsync(key, value);
 
 		}
-
-	}
-
-	/**
-	 * Get a hash set
-	 * @param {string} key
-	 * @return {*}
-	 */
-	async hgetall (key) {
-
-		return this._client.hgetallAsync(key);
 
 	}
 
@@ -358,7 +358,7 @@ class Redis extends EventEmitter {
 		let cursor = '0';
 		let cycle = 0;
 
-		await _scan();
+		return _scan();
 
 		async function _scan () {
 
