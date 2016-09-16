@@ -114,13 +114,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.set(key, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.setAsync(key, value);
+			await this._client.setAsync(key, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -136,13 +137,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.incrby(key, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.incrbyAsync(key, value);
+			await this._client.incrbyAsync(key, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -158,13 +160,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.incrbyfloat(key, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.incrbyfloatAsync(key, value);
+			await this._client.incrbyfloatAsync(key, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -181,13 +184,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.hincrby(key, hashKey, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.hincrbyAsync(key, hashKey, value);
+			await this._client.hincrbyAsync(key, hashKey, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -204,13 +208,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.hincrbyfloat(key, hashKey, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.hincrbyfloatAsync(key, hashKey, value);
+			await this._client.hincrbyfloatAsync(key, hashKey, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -226,13 +231,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.hmset(key, hash);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.hmsetAsync(key, hash);
+			await this._client.hmsetAsync(key, hash);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
@@ -278,13 +284,14 @@ class Redis extends EventEmitter {
 		if (this._multi) {
 
 			this._multi.sadd(key, value);
-			return this._checkExpiry(key, options);
 
 		} else {
 
-			return this._client.saddAsync(key, value);
+			await this._client.saddAsync(key, value);
 
 		}
+
+		return this._checkExpiry(key, options);
 
 	}
 
