@@ -1,5 +1,3 @@
-'use strict';
-
 import Redis from '../../src/index';
 
 const redis = new Redis({
@@ -8,11 +6,17 @@ const redis = new Redis({
 });
 
 describe('#smembers()', () => {
+
 	it('should return empty array', (done) => {
+
 		redis.smembers('nokey', (err, result) => {
+
 			result.should.be.an.Array;
 			result.length.should.be.equal(0);
 			done(err);
+
 		});
+
 	});
+
 });
