@@ -255,6 +255,13 @@ describe('#index()', async () => {
 
 	describe('transactions', async () => {
 
+		it('should begin and rollback', () => {
+
+			redis.begin();
+			redis.rollback();
+
+		});
+
 		it('should set a key value', async () => {
 
 			await testTransaction('test1', async () => {
