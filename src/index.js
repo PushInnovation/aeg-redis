@@ -1,6 +1,7 @@
 import redis from 'redis';
 import { EventEmitter } from 'events';
 import Promise from 'bluebird';
+import _ from 'lodash';
 
 const SCAN_LIMIT = 1000;
 
@@ -12,7 +13,10 @@ class Redis extends EventEmitter {
 	 */
 	constructor (options) {
 
+		options = options || {};
+
 		super();
+		this._prefix = options.prefix || '';
 		this._client = redis.createClient(options);
 		Promise.promisifyAll(this._client);
 
@@ -345,7 +349,13 @@ class Redis extends EventEmitter {
 
 			} else {
 
-				return self._client.delAsync(keys);
+				const keysToDel = _.map(keys, (key) => {
+
+					return key.replace(this._prefix, '');
+
+				});
+
+				return self._client.delAsync(keysToDel);
 
 			}
 
@@ -362,6 +372,8 @@ class Redis extends EventEmitter {
 
 		const self = this;
 
+		const resolvedPattern = this._prefix + pattern;
+
 		let cursor = '0';
 		let cycle = 0;
 
@@ -371,7 +383,7 @@ class Redis extends EventEmitter {
 
 			const res = await self._client.scanAsync(
 				cursor,
-				'MATCH', pattern,
+				'MATCH', resolvedPattern,
 				'COUNT', SCAN_LIMIT);
 
 			cursor = res[0];
