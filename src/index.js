@@ -3,6 +3,9 @@ import { EventEmitter } from 'events';
 import Promise from 'bluebird';
 import _ from 'lodash';
 
+Promise.promisifyAll(redis.RedisClient.prototype);
+Promise.promisifyAll(redis.Multi.prototype);
+
 const SCAN_LIMIT = 1000;
 
 class Redis extends EventEmitter {
@@ -18,7 +21,6 @@ class Redis extends EventEmitter {
 		super();
 		this._prefix = options.prefix || '';
 		this._client = redis.createClient(options);
-		Promise.promisifyAll(this._client);
 
 	}
 
@@ -54,8 +56,7 @@ class Redis extends EventEmitter {
 
 		try {
 
-			const exec = Promise.promisify(this._multi.exec, {context: this._multi});
-			await exec();
+			await this._multi.execAsync();
 			this._multi = null;
 
 		} catch (ex) {
