@@ -44,6 +44,17 @@ class Redis extends EventEmitter {
 	}
 
 	/**
+	 * Watch a key
+	 * @param {string} key
+	 * @returns {Promise.<*>}
+	 */
+	async watch (key) {
+
+		return this._client.watchAsync(key);
+
+	}
+
+	/**
 	 * Commit a transaction
 	 */
 	async commit () {
@@ -54,15 +65,13 @@ class Redis extends EventEmitter {
 
 		}
 
-		try {
+		const result = await this._multi.execAsync();
 
-			await this._multi.execAsync();
-			this._multi = null;
+		this._multi = null;
 
-		} catch (ex) {
+		if (!result) {
 
-			this._multi = null;
-			throw ex;
+			throw new Error('Transaction failed, please retry');
 
 		}
 
