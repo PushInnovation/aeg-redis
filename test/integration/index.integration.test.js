@@ -7,6 +7,18 @@ const redis = new Redis({
 	port: 32769
 }).on('info', (obj) => console.log(obj));
 
+before(async () => {
+
+	return redis.scanDel('test*');
+
+});
+
+after(async () => {
+
+	return redis.scanDel('test*');
+
+});
+
 describe('#index()', async () => {
 
 	describe('no transaction', async () => {
@@ -493,6 +505,57 @@ describe('#index()', async () => {
 				await redis.sadd('test1', 4, {expire: 30});
 
 			});
+
+		});
+
+	});
+
+	describe('transactions with watches', async () => {
+
+		it('should conflict', async () => {
+
+			const redis2 = new Redis({
+				host: '192.168.99.100',
+				port: 32769
+			}).on('info', (obj) => console.log(obj));
+
+			await redis2.watch('test-c');
+			redis2.begin();
+
+			await redis.set('test-c', 4);
+			await redis2.set('test-c', 3);
+
+			try {
+
+				await redis2.commit();
+				should.fail('Should not have commited transaction');
+
+			} catch (ex) {
+
+				if (ex instanceof should.AssertionError) {
+
+					throw ex;
+
+				}
+
+			}
+
+		});
+
+		it('should not conflict', async () => {
+
+			const redis2 = new Redis({
+				host: '192.168.99.100',
+				port: 32769
+			}).on('info', (obj) => console.log(obj));
+
+			await redis.set('test-c', 5);
+
+			await redis2.watch('test-c');
+
+			redis2.begin();
+			await redis2.set('test-c', 3);
+			await redis2.commit();
 
 		});
 
