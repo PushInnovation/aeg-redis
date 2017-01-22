@@ -107,9 +107,9 @@ class Redis extends EventEmitter {
 	/**
 	 * Clean up the connection
 	 */
-	quit () {
+	async quit () {
 
-		this._client.quit();
+		return this._client.quitAsync();
 
 	}
 
