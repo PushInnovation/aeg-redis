@@ -25,6 +25,12 @@ describe('#index()', async () => {
 
 		it('should set a key value', async () => {
 
+			redis.isTransactionOpen.should.be.false;
+
+		});
+
+		it('should set a key value', async () => {
+
 			await redis.set('test1', 1);
 			const val = await redis.get('test1');
 			should.exist(val);
@@ -270,6 +276,7 @@ describe('#index()', async () => {
 		it('should begin and rollback', () => {
 
 			redis.begin();
+			redis.isTransactionOpen.should.be.ok;
 			redis.rollback();
 
 		});
