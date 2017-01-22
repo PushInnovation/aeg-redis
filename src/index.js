@@ -104,6 +104,15 @@ class Redis extends EventEmitter {
 
 	}
 
+	/**
+	 * Clean up the connection
+	 */
+	quit () {
+
+		this._client.quit();
+
+	}
+
 	/* standard keys */
 
 	/**
