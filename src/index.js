@@ -67,7 +67,7 @@ class Redis extends EventEmitter {
 
 		const result = await this._multi.execAsync();
 
-		this._multi = null;
+		this.rollback();
 
 		if (!result) {
 
@@ -92,6 +92,15 @@ class Redis extends EventEmitter {
 			throw new Error('No transaction open');
 
 		}
+
+	}
+
+	/**
+	 * Is a transaction still open
+	 */
+	get isTransactionOpen () {
+
+		return !!this._multi;
 
 	}
 
