@@ -16,7 +16,7 @@ before(async () => {
 after(async () => {
 
 	await redis.scanDel('test*');
-	redis.quit();
+	await redis.quit();
 
 });
 
