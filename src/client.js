@@ -40,6 +40,17 @@ class Redis extends EventEmitter {
 	/* transactions */
 
 	/**
+	 * Return the transaction prototype
+	 * @returns {Transaction}
+	 * @constructor
+	 */
+	static get Transaction () {
+
+		return Transaction;
+
+	}
+
+	/**
 	 * Get a transaction
 	 * @returns {Transaction}
 	 */
