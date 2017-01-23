@@ -1,5 +1,5 @@
 import should from 'should';
-import Redis from '../../src/index';
+import Redis from '../../src/client';
 import Promise from 'bluebird';
 
 const redis = new Redis({
@@ -16,19 +16,13 @@ before(async () => {
 after(async () => {
 
 	await redis.scanDel('test*');
-	await redis.quit();
+	await redis.dispose();
 
 });
 
 describe('#index()', async () => {
 
 	describe('no transaction', async () => {
-
-		it('should set a key value', async () => {
-
-			redis.isTransactionOpen.should.be.false;
-
-		});
 
 		it('should set a key value', async () => {
 
@@ -272,7 +266,7 @@ describe('#index()', async () => {
 
 	});
 
-	describe('transactions', async () => {
+	describe.skip('transactions', async () => {
 
 		it('should begin and rollback', () => {
 
@@ -444,7 +438,7 @@ describe('#index()', async () => {
 
 	});
 
-	describe('expiry transaction', async () => {
+	describe.skip('expiry transaction', async () => {
 
 		it('should set a key value', async () => {
 
@@ -518,7 +512,7 @@ describe('#index()', async () => {
 
 	});
 
-	describe('transactions with watches', async () => {
+	describe.skip('transactions with watches', async () => {
 
 		it('should conflict', async () => {
 
