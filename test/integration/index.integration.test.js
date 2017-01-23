@@ -266,21 +266,21 @@ describe('#index()', async () => {
 
 	});
 
-	describe.skip('transactions', async () => {
+	describe('transactions', async () => {
 
 		it('should begin and rollback', () => {
 
-			redis.begin();
-			redis.isTransactionOpen.should.be.ok;
-			redis.rollback();
+			const transaction = redis.transaction();
+			transaction.isOpen.should.be.ok;
+			transaction.rollback();
 
 		});
 
 		it('should set a key value', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.set('test1', 1);
+				await transaction.set('test1', 1);
 
 			}, async () => {
 
@@ -293,9 +293,9 @@ describe('#index()', async () => {
 
 		it('should increment a key value', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.incrby('test1', 1);
+				await transaction.incrby('test1', 1);
 
 			}, async () => {
 
@@ -308,9 +308,9 @@ describe('#index()', async () => {
 
 		it('should increment a key value by float', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.incrbyfloat('test1', 1);
+				await transaction.incrbyfloat('test1', 1);
 
 			}, async () => {
 
@@ -323,9 +323,9 @@ describe('#index()', async () => {
 
 		it('should create a hash set', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.hmset('test1', {test: 1});
+				await transaction.hmset('test1', {test: 1});
 
 			}, async () => {
 
@@ -338,10 +338,10 @@ describe('#index()', async () => {
 
 		it('should create and increment hash set', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.hmset('test1', {test: 1});
-				await redis.hincrby('test1', 'test', 1);
+				await transaction.hmset('test1', {test: 1});
+				await transaction.hincrby('test1', 'test', 1);
 
 			}, async () => {
 
@@ -354,10 +354,10 @@ describe('#index()', async () => {
 
 		it('should create and increment hash set by float', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.hmset('test1', {test: 1});
-				await redis.hincrbyfloat('test1', 'test', 1.1);
+				await transaction.hmset('test1', {test: 1});
+				await transaction.hincrbyfloat('test1', 'test', 1.1);
 
 			}, async () => {
 
@@ -370,9 +370,9 @@ describe('#index()', async () => {
 
 		it('should create a set', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.sadd('test1', [1, 2]);
+				await transaction.sadd('test1', [1, 2]);
 
 			}, async () => {
 
@@ -386,10 +386,10 @@ describe('#index()', async () => {
 
 		it('should remove a set member', async () => {
 
-			await testTransaction('test1', async () => {
+			await testTransaction('test1', async (transaction) => {
 
-				await redis.sadd('test1', [1, 2]);
-				await redis.srem('test1', 1);
+				await transaction.sadd('test1', [1, 2]);
+				await transaction.srem('test1', 1);
 
 			}, async () => {
 
@@ -400,61 +400,15 @@ describe('#index()', async () => {
 
 		});
 
-		it('should scanDel', async () => {
-
-			await Promise.map([...new Array(2001)].map((_, i) => i), (val) => {
-
-				return redis.set('test' + val, val);
-
-			});
-
-			let counter = 0;
-
-			redis.begin();
-
-			await redis.scanDel('test*');
-
-			await redis.scan('test*', (res) => {
-
-				counter += res.length;
-
-			});
-
-			counter.should.be.equal(2001);
-
-			counter = 0;
-
-			await redis.commit();
-
-			await redis.scan('test*', (res) => {
-
-				counter += res.length;
-
-			});
-
-			counter.should.be.equal(0);
-
-		});
-
 	});
 
-	describe.skip('expiry transaction', async () => {
+	describe('expiry transaction', async () => {
 
 		it('should set a key value', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.set('test1', 1, {expire: 30});
-
-			});
-
-		});
-
-		it('should increment it by 1', async () => {
-
-			await testExpireTransaction(async () => {
-
-				await redis.incrby('test1', 1, {expire: 30});
+				await transaction.set('test1', 1, {expire: 30});
 
 			});
 
@@ -462,9 +416,19 @@ describe('#index()', async () => {
 
 		it('should increment it by 1', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.incrbyfloat('test1', 1.1, {expire: 30});
+				await transaction.incrby('test1', 1, {expire: 30});
+
+			});
+
+		});
+
+		it('should increment it by 1', async () => {
+
+			await testExpireTransaction(async (transaction) => {
+
+				await transaction.incrbyfloat('test1', 1.1, {expire: 30});
 
 			});
 
@@ -472,9 +436,9 @@ describe('#index()', async () => {
 
 		it('should set a hash key value', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.hmset('test1', {test: 1}, {expire: 30});
+				await transaction.hmset('test1', {test: 1}, {expire: 30});
 
 			});
 
@@ -482,9 +446,9 @@ describe('#index()', async () => {
 
 		it('should increment a hash key value', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.hincrby('test1', 'test', 1, {expire: 30});
+				await transaction.hincrby('test1', 'test', 1, {expire: 30});
 
 			});
 
@@ -492,9 +456,9 @@ describe('#index()', async () => {
 
 		it('should increment a hash key value by float', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.hincrbyfloat('test1', 'test', 1.1, {expire: 30});
+				await transaction.hincrbyfloat('test1', 'test', 1.1, {expire: 30});
 
 			});
 
@@ -502,9 +466,9 @@ describe('#index()', async () => {
 
 		it('should set a hash key value', async () => {
 
-			await testExpireTransaction(async () => {
+			await testExpireTransaction(async (transaction) => {
 
-				await redis.sadd('test1', 4, {expire: 30});
+				await transaction.sadd('test1', 4, {expire: 30});
 
 			});
 
@@ -512,7 +476,7 @@ describe('#index()', async () => {
 
 	});
 
-	describe.skip('transactions with watches', async () => {
+	describe('transactions with watches', async () => {
 
 		it('should conflict', async () => {
 
@@ -522,14 +486,14 @@ describe('#index()', async () => {
 			}).on('info', (obj) => console.log(obj));
 
 			await redis2.watch('test-c');
-			redis2.begin();
+			const transaction = redis2.transaction();
 
 			await redis.set('test-c', 4);
-			await redis2.set('test-c', 3);
+			await transaction.set('test-c', 3);
 
 			try {
 
-				await redis2.commit();
+				await transaction.commit();
 				should.fail('Should not have commited transaction');
 
 			} catch (ex) {
@@ -555,9 +519,9 @@ describe('#index()', async () => {
 
 			await redis2.watch('test-c');
 
-			redis2.begin();
-			await redis2.set('test-c', 3);
-			await redis2.commit();
+			const transaction = redis2.transaction();
+			await transaction.set('test-c', 3);
+			await transaction.commit();
 
 		});
 
@@ -567,19 +531,19 @@ describe('#index()', async () => {
 
 async function testTransaction (key, delegate, check) {
 
-	redis.begin();
-	await delegate();
+	let transaction = redis.transaction();
+	await delegate(transaction);
 	const result1 = await redis.exists(key);
 	result1.should.not.be.ok;
-	await redis.commit();
+	await transaction.commit();
 	const result2 = await redis.exists(key);
 	result2.should.be.ok;
 	await check();
-	redis.begin();
-	await redis.del(key);
+	transaction = redis.transaction();
+	await transaction.del(key);
 	const result3 = await redis.exists(key);
 	result3.should.be.ok;
-	await redis.commit();
+	await transaction.commit();
 	const result4 = await redis.exists(key);
 	result4.should.not.be.ok;
 
@@ -595,9 +559,9 @@ async function testExpire () {
 
 async function testExpireTransaction (delegate) {
 
-	redis.begin();
-	await delegate();
-	await redis.commit();
+	const transaction = redis.transaction();
+	await delegate(transaction);
+	await transaction.commit();
 	const ttl = await redis.ttl('test1');
 	(ttl <= 30 && ttl >= 1).should.be.ok;
 	await redis.del('test1');
