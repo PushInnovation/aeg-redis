@@ -274,6 +274,10 @@ describe('#index()', async () => {
 			transaction.isOpen.should.be.ok;
 			transaction.rollback();
 
+			const C = Client.Transaction;
+			const i = new C(client._client);
+			i.constructor.name.should.be.equal('Transaction');
+
 		});
 
 		it('should set a key value', async () => {
