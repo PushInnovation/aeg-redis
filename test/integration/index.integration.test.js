@@ -1,22 +1,22 @@
 import should from 'should';
-import Redis from '../../src/client';
+import Client from '../../src/client';
 import Promise from 'bluebird';
 
-const redis = new Redis({
+const client = new Client({
 	host: '192.168.99.100',
 	port: 32769
 }).on('info', (obj) => console.log(obj));
 
 before(async () => {
 
-	return redis.scanDel('test*');
+	return client.scanDel('test*');
 
 });
 
 after(async () => {
 
-	await redis.scanDel('test*');
-	await redis.dispose();
+	await client.scanDel('test*');
+	await client.dispose();
 
 });
 
@@ -26,8 +26,8 @@ describe('#index()', async () => {
 
 		it('should set a key value', async () => {
 
-			await redis.set('test1', 1);
-			const val = await redis.get('test1');
+			await client.set('test1', 1);
+			const val = await client.get('test1');
 			should.exist(val);
 			val.should.be.equal('1');
 
@@ -35,15 +35,15 @@ describe('#index()', async () => {
 
 		it('key should exist', async () => {
 
-			const result = await redis.exists('test1');
+			const result = await client.exists('test1');
 			result.should.be.ok;
 
 		});
 
 		it('should increment it by 1', async () => {
 
-			await redis.incrby('test1', 1);
-			const val = await redis.get('test1');
+			await client.incrby('test1', 1);
+			const val = await client.get('test1');
 			should.exist(val);
 			val.should.be.equal('2');
 
@@ -51,8 +51,8 @@ describe('#index()', async () => {
 
 		it('should increment it by 1', async () => {
 
-			await redis.incrbyfloat('test1', 1.1);
-			const val = await redis.get('test1');
+			await client.incrbyfloat('test1', 1.1);
+			const val = await client.get('test1');
 			should.exist(val);
 			val.should.be.equal('3.1');
 
@@ -60,23 +60,23 @@ describe('#index()', async () => {
 
 		it('should remove a key value', async () => {
 
-			await redis.del('test1');
-			const val = await redis.get('test1');
+			await client.del('test1');
+			const val = await client.get('test1');
 			should.not.exist(val);
 
 		});
 
 		it('key should not exist', async () => {
 
-			const result = await redis.exists('test1');
+			const result = await client.exists('test1');
 			result.should.not.be.ok;
 
 		});
 
 		it('should set a hash key value', async () => {
 
-			await redis.hmset('test1', {test: 1});
-			const val = await redis.hgetall('test1');
+			await client.hmset('test1', {test: 1});
+			const val = await client.hgetall('test1');
 			should.exist(val);
 			should(val).be.an.Object;
 			should(val).have.property('test');
@@ -86,8 +86,8 @@ describe('#index()', async () => {
 
 		it('should increment a hash key value', async () => {
 
-			await redis.hincrby('test1', 'test', 1);
-			const val = await redis.hgetall('test1');
+			await client.hincrby('test1', 'test', 1);
+			const val = await client.hgetall('test1');
 			should.exist(val);
 			should(val).be.an.Object;
 			should(val).have.property('test');
@@ -97,8 +97,8 @@ describe('#index()', async () => {
 
 		it('should increment a hash key value by float', async () => {
 
-			await redis.hincrbyfloat('test1', 'test', 1.1);
-			const val = await redis.hgetall('test1');
+			await client.hincrbyfloat('test1', 'test', 1.1);
+			const val = await client.hgetall('test1');
 			should.exist(val);
 			should(val).be.an.Object;
 			should(val).have.property('test');
@@ -108,16 +108,16 @@ describe('#index()', async () => {
 
 		it('should remove a key value', async () => {
 
-			await redis.del('test1');
-			const val = await redis.get('test1');
+			await client.del('test1');
+			const val = await client.get('test1');
 			should.not.exist(val);
 
 		});
 
 		it('should set a hash key value', async () => {
 
-			await redis.hmset('test2', ['test', 1]);
-			const val = await redis.hgetall('test2');
+			await client.hmset('test2', ['test', 1]);
+			const val = await client.hgetall('test2');
 			should.exist(val);
 			should(val).be.an.Object;
 			should(val).have.property('test');
@@ -127,16 +127,16 @@ describe('#index()', async () => {
 
 		it('should remove a key value', async () => {
 
-			await redis.del('test2');
-			const val = await redis.get('test2');
+			await client.del('test2');
+			const val = await client.get('test2');
 			should.not.exist(val);
 
 		});
 
 		it('should set a set key value by array', async () => {
 
-			await redis.sadd('test1', [1, 2, 3]);
-			const val = await redis.smembers('test1');
+			await client.sadd('test1', [1, 2, 3]);
+			const val = await client.smembers('test1');
 			should.exist(val);
 			should(val).be.an.Array;
 			val.length.should.be.equal(3);
@@ -145,8 +145,8 @@ describe('#index()', async () => {
 
 		it('should set a set key value', async () => {
 
-			await redis.sadd('test1', 4);
-			const val = await redis.smembers('test1');
+			await client.sadd('test1', 4);
+			const val = await client.smembers('test1');
 			should.exist(val);
 			should(val).be.an.Array;
 			val.length.should.be.equal(4);
@@ -155,8 +155,8 @@ describe('#index()', async () => {
 
 		it('should delete a set key value', async () => {
 
-			await redis.srem('test1', 1);
-			const val = await redis.smembers('test1');
+			await client.srem('test1', 1);
+			const val = await client.smembers('test1');
 			should.exist(val);
 			should(val).be.an.Array;
 			val.length.should.be.equal(3);
@@ -165,8 +165,8 @@ describe('#index()', async () => {
 
 		it('should remove a key value', async () => {
 
-			await redis.del('test1');
-			const val = await redis.get('test1');
+			await client.del('test1');
+			const val = await client.get('test1');
 			should.not.exist(val);
 
 		});
@@ -175,7 +175,7 @@ describe('#index()', async () => {
 
 			await Promise.map([...new Array(2001)].map((_, i) => i), (val) => {
 
-				return redis.set('test' + val, val);
+				return client.set('test' + val, val);
 
 			});
 
@@ -185,7 +185,7 @@ describe('#index()', async () => {
 
 			let counter = 0;
 
-			await redis.scan('test*', (res) => {
+			await client.scan('test*', (res) => {
 
 				counter += res.length;
 
@@ -199,9 +199,9 @@ describe('#index()', async () => {
 
 			let counter = 0;
 
-			await redis.scanDel('test*');
+			await client.scanDel('test*');
 
-			await redis.scan('test*', (res) => {
+			await client.scan('test*', (res) => {
 
 				counter += res.length;
 
@@ -217,49 +217,49 @@ describe('#index()', async () => {
 
 		it('should set a key value', async () => {
 
-			await redis.set('test1', 1, {expire: 30});
+			await client.set('test1', 1, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should increment it by 1', async () => {
 
-			await redis.incrby('test1', 1, {expire: 30});
+			await client.incrby('test1', 1, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should increment it by 1', async () => {
 
-			await redis.incrbyfloat('test1', 1.1, {expire: 30});
+			await client.incrbyfloat('test1', 1.1, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should set a hash key value', async () => {
 
-			await redis.hmset('test1', {test: 1}, {expire: 30});
+			await client.hmset('test1', {test: 1}, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should increment a hash key value', async () => {
 
-			await redis.hincrby('test1', 'test', 1, {expire: 30});
+			await client.hincrby('test1', 'test', 1, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should increment a hash key value by float', async () => {
 
-			await redis.hincrbyfloat('test1', 'test', 1.1, {expire: 30});
+			await client.hincrbyfloat('test1', 'test', 1.1, {expire: 30});
 			await testExpire();
 
 		});
 
 		it('should set a hash key value', async () => {
 
-			await redis.sadd('test1', 4, {expire: 30});
+			await client.sadd('test1', 4, {expire: 30});
 			await testExpire();
 
 		});
@@ -270,7 +270,7 @@ describe('#index()', async () => {
 
 		it('should begin and rollback', () => {
 
-			const transaction = redis.transaction();
+			const transaction = client.transaction();
 			transaction.isOpen.should.be.ok;
 			transaction.rollback();
 
@@ -284,7 +284,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.get('test1');
+				const val = await client.get('test1');
 				val.should.be.equal('1');
 
 			});
@@ -299,7 +299,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.get('test1');
+				const val = await client.get('test1');
 				val.should.be.equal('1');
 
 			});
@@ -314,7 +314,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.get('test1');
+				const val = await client.get('test1');
 				val.should.be.equal('1');
 
 			});
@@ -329,7 +329,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.hgetall('test1');
+				const val = await client.hgetall('test1');
 				val.test.should.be.equal('1');
 
 			});
@@ -345,7 +345,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.hgetall('test1');
+				const val = await client.hgetall('test1');
 				val.test.should.be.equal('2');
 
 			});
@@ -361,7 +361,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.hgetall('test1');
+				const val = await client.hgetall('test1');
 				val.test.should.be.equal('2.1');
 
 			});
@@ -376,7 +376,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.smembers('test1');
+				const val = await client.smembers('test1');
 				val.length.should.be.equal(2);
 				val[0].should.be.equal('1');
 
@@ -393,7 +393,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await redis.smembers('test1');
+				const val = await client.smembers('test1');
 				val[0].should.be.equal('2');
 
 			});
@@ -480,15 +480,15 @@ describe('#index()', async () => {
 
 		it('should conflict', async () => {
 
-			const redis2 = new Redis({
+			const client2 = new Client({
 				host: '192.168.99.100',
 				port: 32769
 			}).on('info', (obj) => console.log(obj));
 
-			await redis2.watch('test-c');
-			const transaction = redis2.transaction();
+			await client2.watch('test-c');
+			const transaction = client2.transaction();
 
-			await redis.set('test-c', 4);
+			await client.set('test-c', 4);
 			await transaction.set('test-c', 3);
 
 			try {
@@ -510,16 +510,16 @@ describe('#index()', async () => {
 
 		it('should not conflict', async () => {
 
-			const redis2 = new Redis({
+			const client2 = new Client({
 				host: '192.168.99.100',
 				port: 32769
 			}).on('info', (obj) => console.log(obj));
 
-			await redis.set('test-c', 5);
+			await client.set('test-c', 5);
 
-			await redis2.watch('test-c');
+			await client2.watch('test-c');
 
-			const transaction = redis2.transaction();
+			const transaction = client2.transaction();
 			await transaction.set('test-c', 3);
 			await transaction.commit();
 
@@ -531,39 +531,39 @@ describe('#index()', async () => {
 
 async function testTransaction (key, delegate, check) {
 
-	let transaction = redis.transaction();
+	let transaction = client.transaction();
 	await delegate(transaction);
-	const result1 = await redis.exists(key);
+	const result1 = await client.exists(key);
 	result1.should.not.be.ok;
 	await transaction.commit();
-	const result2 = await redis.exists(key);
+	const result2 = await client.exists(key);
 	result2.should.be.ok;
 	await check();
-	transaction = redis.transaction();
+	transaction = client.transaction();
 	await transaction.del(key);
-	const result3 = await redis.exists(key);
+	const result3 = await client.exists(key);
 	result3.should.be.ok;
 	await transaction.commit();
-	const result4 = await redis.exists(key);
+	const result4 = await client.exists(key);
 	result4.should.not.be.ok;
 
 }
 
 async function testExpire () {
 
-	const ttl = await redis.ttl('test1');
+	const ttl = await client.ttl('test1');
 	(ttl <= 30 && ttl >= 1).should.be.ok;
-	await redis.del('test1');
+	await client.del('test1');
 
 }
 
 async function testExpireTransaction (delegate) {
 
-	const transaction = redis.transaction();
+	const transaction = client.transaction();
 	await delegate(transaction);
 	await transaction.commit();
-	const ttl = await redis.ttl('test1');
+	const ttl = await client.ttl('test1');
 	(ttl <= 30 && ttl >= 1).should.be.ok;
-	await redis.del('test1');
+	await client.del('test1');
 
 }
