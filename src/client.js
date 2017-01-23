@@ -2,6 +2,7 @@ import redis from 'redis';
 import { EventEmitter } from 'events';
 import Promise from 'bluebird';
 import _ from 'lodash';
+import Transaction from './transaction';
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
@@ -24,22 +25,29 @@ class Redis extends EventEmitter {
 
 	}
 
+	/**
+	 * Close the client
+	 * @returns {Promise.<*>}
+	 */
+	async dispose () {
+
+		await this._client.quitAsync();
+
+		this._client = null;
+
+	}
+
 	/* transactions */
 
 	/**
-	 * Begin a transaction
+	 * Get a transaction
+	 * @returns {Transaction}
 	 */
-	begin () {
+	transaction () {
 
-		if (!this._multi) {
+		this._checkDisposed();
 
-			this._multi = this._client.multi();
-
-		} else {
-
-			throw new Error('Transaction already open');
-
-		}
+		return new Transaction(this._client);
 
 	}
 
@@ -50,76 +58,21 @@ class Redis extends EventEmitter {
 	 */
 	async watch (key) {
 
+		this._checkDisposed();
+
 		return this._client.watchAsync(key);
 
 	}
 
-	/**
-	 * Commit a transaction
-	 */
-	async commit () {
-
-		if (!this._multi) {
-
-			throw new Error('No transaction open');
-
-		}
-
-		const result = await this._multi.execAsync();
-
-		this.rollback();
-
-		if (!result) {
-
-			throw new Error('Transaction failed, please retry');
-
-		}
-
-	}
-
-	/**
-	 * Roll the transaction back
-	 */
-	rollback () {
-
-		if (this._multi) {
-
-			this._multi.discard();
-			this._multi = null;
-
-		} else {
-
-			throw new Error('No transaction open');
-
-		}
-
-	}
-
-	/**
-	 * Is a transaction still open
-	 */
-	get isTransactionOpen () {
-
-		return !!this._multi;
-
-	}
-
-	/**
-	 * Clean up the connection
-	 */
-	async quit () {
-
-		return this._client.quitAsync();
-
-	}
-
-	/* standard keys */
+	/* keys */
 
 	/**
 	 * Key exists
 	 * @param {string} key
 	 */
 	async exists (key) {
+
+		this._checkDisposed();
 
 		return this._client.existsAsync(key);
 
@@ -130,6 +83,8 @@ class Redis extends EventEmitter {
 	 * @param {string} key
 	 */
 	async get (key) {
+
+		this._checkDisposed();
 
 		return this._client.getAsync(key);
 
@@ -143,15 +98,9 @@ class Redis extends EventEmitter {
 	 */
 	async set (key, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.set(key, value);
-
-		} else {
-
-			await this._client.setAsync(key, value);
-
-		}
+		await this._client.setAsync(key, value);
 
 		return this._checkExpiry(key, options);
 
@@ -166,15 +115,9 @@ class Redis extends EventEmitter {
 	 */
 	async incrby (key, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.incrby(key, value);
-
-		} else {
-
-			await this._client.incrbyAsync(key, value);
-
-		}
+		await this._client.incrbyAsync(key, value);
 
 		return this._checkExpiry(key, options);
 
@@ -189,15 +132,9 @@ class Redis extends EventEmitter {
 	 */
 	async incrbyfloat (key, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.incrbyfloat(key, value);
-
-		} else {
-
-			await this._client.incrbyfloatAsync(key, value);
-
-		}
+		await this._client.incrbyfloatAsync(key, value);
 
 		return this._checkExpiry(key, options);
 
@@ -213,15 +150,9 @@ class Redis extends EventEmitter {
 	 */
 	async hincrby (key, hashKey, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.hincrby(key, hashKey, value);
-
-		} else {
-
-			await this._client.hincrbyAsync(key, hashKey, value);
-
-		}
+		await this._client.hincrbyAsync(key, hashKey, value);
 
 		return this._checkExpiry(key, options);
 
@@ -237,15 +168,9 @@ class Redis extends EventEmitter {
 	 */
 	async hincrbyfloat (key, hashKey, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.hincrbyfloat(key, hashKey, value);
-
-		} else {
-
-			await this._client.hincrbyfloatAsync(key, hashKey, value);
-
-		}
+		await this._client.hincrbyfloatAsync(key, hashKey, value);
 
 		return this._checkExpiry(key, options);
 
@@ -260,15 +185,9 @@ class Redis extends EventEmitter {
 	 */
 	async hmset (key, hash, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.hmset(key, hash);
-
-		} else {
-
-			await this._client.hmsetAsync(key, hash);
-
-		}
+		await this._client.hmsetAsync(key, hash);
 
 		return this._checkExpiry(key, options);
 
@@ -281,6 +200,8 @@ class Redis extends EventEmitter {
 	 */
 	async hgetall (key) {
 
+		this._checkDisposed();
+
 		return this._client.hgetallAsync(key);
 
 	}
@@ -292,15 +213,9 @@ class Redis extends EventEmitter {
 	 */
 	async del (key) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.del(key);
-
-		} else {
-
-			return this._client.delAsync(key);
-
-		}
+		return this._client.delAsync(key);
 
 	}
 
@@ -313,15 +228,9 @@ class Redis extends EventEmitter {
 	 */
 	async sadd (key, value, options) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.sadd(key, value);
-
-		} else {
-
-			await this._client.saddAsync(key, value);
-
-		}
+		await this._client.saddAsync(key, value);
 
 		return this._checkExpiry(key, options);
 
@@ -333,6 +242,8 @@ class Redis extends EventEmitter {
 	 * @return {*}
 	 */
 	async smembers (key) {
+
+		this._checkDisposed();
 
 		return this._client.smembersAsync(key);
 
@@ -346,15 +257,9 @@ class Redis extends EventEmitter {
 	 */
 	async srem (key, value) {
 
-		if (this._multi) {
+		this._checkDisposed();
 
-			this._multi.srem(key, value);
-
-		} else {
-
-			return this._client.sremAsync(key, value);
-
-		}
+		return this._client.sremAsync(key, value);
 
 	}
 
@@ -365,27 +270,21 @@ class Redis extends EventEmitter {
 	 */
 	async scanDel (pattern) {
 
+		this._checkDisposed();
+
 		const self = this;
 
 		return this.scan(pattern, async (keys) => {
 
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
 
-			if (self._multi) {
+			const keysToDel = _.map(keys, (key) => {
 
-				self._multi.del(keys);
+				return key.replace(this._prefix, '');
 
-			} else {
+			});
 
-				const keysToDel = _.map(keys, (key) => {
-
-					return key.replace(this._prefix, '');
-
-				});
-
-				return self._client.delAsync(keysToDel);
-
-			}
+			return self._client.delAsync(keysToDel);
 
 		});
 
@@ -397,6 +296,8 @@ class Redis extends EventEmitter {
 	 * @param {function} delegate
 	 */
 	async scan (pattern, delegate) {
+
+		this._checkDisposed();
 
 		const self = this;
 
@@ -453,6 +354,8 @@ class Redis extends EventEmitter {
 	 */
 	async ttl (key) {
 
+		this._checkDisposed();
+
 		return this._client.ttlAsync(key);
 
 	}
@@ -468,15 +371,22 @@ class Redis extends EventEmitter {
 
 		if (options && options.expire) {
 
-			if (this._multi) {
+			return this._client.expireAsync(key, options.expire);
 
-				this._multi.expire(key, options.expire);
+		}
 
-			} else {
+	}
 
-				return this._client.expireAsync(key, options.expire);
+	/**
+	 * Check to make sure this transaction is still open
+	 * @returns null
+	 * @private
+	 */
+	_checkDisposed () {
 
-			}
+		if (!this._client) {
+
+			throw new Error('Client disposed');
 
 		}
 

@@ -2,7 +2,7 @@
   "name": "@adexchange/aeg-redis",
   "version": "0.0.26",
   "description": "Redis client",
-  "main": "lib/index.js",
+  "main": "lib/client.js",
   "author": "Ad Exchange Group",
   "repository": {
     "type": "git",
