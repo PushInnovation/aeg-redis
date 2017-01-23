@@ -1,5 +1,5 @@
 import should from 'should';
-import Client from '../../src/client';
+import Client from '../../src/index';
 import Promise from 'bluebird';
 
 const client = new Client({
