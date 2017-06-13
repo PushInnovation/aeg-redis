@@ -29,10 +29,10 @@ describe('#index()', async () => {
 			await client.set('test-batch-1', 1);
 			await client.set('test-batch-2', 2);
 
-			client.batch();
-			await client.get('test-batch-1');
-			await client.get('test-batch-2');
-			let result = await client.batchExec();
+			let batch = client.batch();
+			await batch.get('test-batch-1');
+			await batch.get('test-batch-2');
+			let result = await batch.exec();
 			result.should.be.an.Array;
 			result.length.should.be.equal(2);
 			result[0].should.be.equal('1');
@@ -44,10 +44,10 @@ describe('#index()', async () => {
 			await client.hmset('test-batch-1', {test: 1});
 			await client.hmset('test-batch-2', {test: 2});
 
-			client.batch();
-			await client.hgetall('test-batch-1');
-			await client.hgetall('test-batch-2');
-			result = await client.batchExec();
+			batch = client.batch();
+			await batch.hgetall('test-batch-1');
+			await batch.hgetall('test-batch-2');
+			result = await batch.exec();
 			result.should.be.an.Array;
 			result.length.should.be.equal(2);
 			result[0].should.be.eql({test: '1'});
@@ -59,10 +59,10 @@ describe('#index()', async () => {
 			await client.sadd('test-batch-1', 1);
 			await client.sadd('test-batch-2', 2);
 
-			client.batch();
-			await client.smembers('test-batch-1');
-			await client.smembers('test-batch-2');
-			result = await client.batchExec();
+			batch = client.batch();
+			await batch.smembers('test-batch-1');
+			await batch.smembers('test-batch-2');
+			result = await batch.exec();
 			result.should.be.an.Array;
 			result.length.should.be.equal(2);
 			result[0].should.be.eql(['1']);
