@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import Promise from 'bluebird';
 import _ from 'lodash';
 import Transaction from './transaction';
+import Batch from './batch';
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
@@ -83,57 +84,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		if (!this._batch) {
-
-			this._batch = this._client.batch();
-
-		}
-
-	}
-
-	/**
-	 * Execute a batch of commands
-	 * @return {Promise<Array<Object>>}
-	 */
-	async batchExec () {
-
-		this._checkDisposed();
-
-		if (!this._batch) {
-
-			throw new Error('batch not open');
-
-		}
-
-		try {
-
-			return await new Promise((resolve, reject) => {
-
-				this._batch.exec((err, res) => {
-
-					if (err) {
-
-						reject(err);
-
-					} else {
-
-						resolve(res);
-
-					}
-
-				});
-
-			});
-
-		} catch (ex) {
-
-			throw ex;
-
-		} finally {
-
-			this._batch = null;
-
-		}
+		return new Batch(this._client);
 
 	}
 
@@ -147,15 +98,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		if (this._batch) {
-
-			this._batch.exists(key);
-
-		} else {
-
-			return this._client.existsAsync(key);
-
-		}
+		return this._client.existsAsync(key);
 
 	}
 
@@ -167,15 +110,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		if (this._batch) {
-
-			this._batch.get(key);
-
-		} else {
-
-			return this._client.getAsync(key);
-
-		}
+		return this._client.getAsync(key);
 
 	}
 
@@ -291,15 +226,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		if (this._batch) {
-
-			this._batch.hgetall(key);
-
-		} else {
-
-			return this._client.hgetallAsync(key);
-
-		}
+		return this._client.hgetallAsync(key);
 
 	}
 
@@ -342,15 +269,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		if (this._batch) {
-
-			this._batch.smembers(key);
-
-		} else {
-
-			return this._client.smembersAsync(key);
-
-		}
+		return this._client.smembersAsync(key);
 
 	}
 
