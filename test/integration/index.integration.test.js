@@ -22,6 +22,59 @@ after(async () => {
 
 describe('#index()', async () => {
 
+	describe('batch', async () => {
+
+		it('should execute batch operation sets', async () => {
+
+			await client.set('test-batch-1', 1);
+			await client.set('test-batch-2', 2);
+
+			client.batch();
+			await client.get('test-batch-1');
+			await client.get('test-batch-2');
+			let result = await client.batchExec();
+			result.should.be.an.Array;
+			result.length.should.be.equal(2);
+			result[0].should.be.equal('1');
+			result[1].should.be.equal('2');
+
+			await client.del('test-batch-1');
+			await client.del('test-batch-2');
+
+			await client.hmset('test-batch-1', {test: 1});
+			await client.hmset('test-batch-2', {test: 2});
+
+			client.batch();
+			await client.hgetall('test-batch-1');
+			await client.hgetall('test-batch-2');
+			result = await client.batchExec();
+			result.should.be.an.Array;
+			result.length.should.be.equal(2);
+			result[0].should.be.eql({test: '1'});
+			result[1].should.be.eql({test: '2'});
+
+			await client.del('test-batch-1');
+			await client.del('test-batch-2');
+
+			await client.sadd('test-batch-1', 1);
+			await client.sadd('test-batch-2', 2);
+
+			client.batch();
+			await client.smembers('test-batch-1');
+			await client.smembers('test-batch-2');
+			result = await client.batchExec();
+			result.should.be.an.Array;
+			result.length.should.be.equal(2);
+			result[0].should.be.eql(['1']);
+			result[1].should.be.eql(['2']);
+
+			await client.del('test-batch-1');
+			await client.del('test-batch-2');
+
+		});
+
+	});
+
 	describe('no transaction', async () => {
 
 		it('should set a key value', async () => {

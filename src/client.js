@@ -22,6 +22,7 @@ class Redis extends EventEmitter {
 		super();
 		this._prefix = options.prefix || '';
 		this._client = redis.createClient(options);
+		this._batch = null;
 
 	}
 
@@ -75,6 +76,67 @@ class Redis extends EventEmitter {
 
 	}
 
+	/* batch */
+
+	/** Begin a batch of commands **/
+	batch () {
+
+		this._checkDisposed();
+
+		if (!this._batch) {
+
+			this._batch = this._client.batch();
+
+		}
+
+	}
+
+	/**
+	 * Execute a batch of commands
+	 * @return {Promise<Array<Object>>}
+	 */
+	async batchExec () {
+
+		this._checkDisposed();
+
+		if (!this._batch) {
+
+			throw new Error('batch not open');
+
+		}
+
+		try {
+
+			return await new Promise((resolve, reject) => {
+
+				this._batch.exec((err, res) => {
+
+					if (err) {
+
+						reject(err);
+
+					} else {
+
+						resolve(res);
+
+					}
+
+				});
+
+			});
+
+		} catch (ex) {
+
+			throw ex;
+
+		} finally {
+
+			this._batch = null;
+
+		}
+
+	}
+
 	/* keys */
 
 	/**
@@ -85,7 +147,15 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return this._client.existsAsync(key);
+		if (this._batch) {
+
+			this._batch.exists(key);
+
+		} else {
+
+			return this._client.existsAsync(key);
+
+		}
 
 	}
 
@@ -97,7 +167,15 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return this._client.getAsync(key);
+		if (this._batch) {
+
+			this._batch.get(key);
+
+		} else {
+
+			return this._client.getAsync(key);
+
+		}
 
 	}
 
@@ -213,7 +291,15 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return this._client.hgetallAsync(key);
+		if (this._batch) {
+
+			this._batch.hgetall(key);
+
+		} else {
+
+			return this._client.hgetallAsync(key);
+
+		}
 
 	}
 
@@ -256,7 +342,15 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return this._client.smembersAsync(key);
+		if (this._batch) {
+
+			this._batch.smembers(key);
+
+		} else {
+
+			return this._client.smembersAsync(key);
+
+		}
 
 	}
 
