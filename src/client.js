@@ -60,7 +60,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return new Transaction(this._client);
+		return new Transaction(this);
 
 	}
 
@@ -84,7 +84,7 @@ class Redis extends EventEmitter {
 
 		this._checkDisposed();
 
-		return new Batch(this._client);
+		return new Batch(this);
 
 	}
 

@@ -328,7 +328,7 @@ describe('#index()', async () => {
 			transaction.rollback();
 
 			const C = Client.Transaction;
-			const i = new C(client._client);
+			const i = new C(client);
 			i.constructor.name.should.be.equal('Transaction');
 
 		});
