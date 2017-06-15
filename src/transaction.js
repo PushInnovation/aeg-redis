@@ -12,7 +12,8 @@ class Transaction {
 	 */
 	constructor (client) {
 
-		this._multi = client.multi();
+		this._client = client;
+		this._multi = client._client.multi();
 
 	}
 

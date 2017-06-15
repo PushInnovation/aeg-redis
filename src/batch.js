@@ -7,7 +7,7 @@ export default class Batch {
 	constructor (client) {
 
 		this._client = client;
-		this._batch = client.batch();
+		this._batch = client._client.batch();
 
 	}
 
