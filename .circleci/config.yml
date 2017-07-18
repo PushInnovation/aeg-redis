@@ -24,7 +24,7 @@ jobs:
           command: npm run compile
       - run:
           name: test
-          command: npm run test:coverage
+          command: npm run build:coverage
 
       - deploy:
           name: deploy
