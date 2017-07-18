@@ -63,7 +63,7 @@ describe('#index()', async () => {
 			await batch.smembers('test-batch-1');
 			await batch.smembers('test-batch-2');
 			result = await batch.exec();
-			should(result).be.instanceOf(Array)
+			should(result).be.instanceOf(Array);
 			should.equal(result.length, 2);
 			result[0].should.be.eql(['1']);
 			result[1].should.be.eql(['2']);
