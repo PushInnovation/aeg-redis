@@ -8,13 +8,12 @@
 ~$*
 xunit.xml
 .idea
-circle.yml
+.circleci
 .gitignore
-.eslint*
-.babelrc
 /config
 test-results.xml
 .editorconfig
 tsconfig.json
 tslint.json
 .nyc_output
+.vscode
