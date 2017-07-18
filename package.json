@@ -18,7 +18,7 @@
 		"compile:watch": "npm run compile -- --watch",
 		"dev": "npm run compile:watch",
 		"build:test": "mocha --recursive --compilers ts:ts-node/register --reporter mocha-junit-reporter test/unit/**/*.ts",
-		"t": "nyc npm run build:test",
+		"build:coverage": "nyc npm run build:test",
 		"patch": "git reset --hard HEAD && git clean -fd && npm run compile && npm version patch -m \"[ci skip] %s\" && git push origin master && git push origin master --tags && npm publish"
 	},
 	"devDependencies": {
