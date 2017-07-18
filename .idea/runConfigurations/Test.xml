@@ -6,9 +6,10 @@
     <pass-parent-env>true</pass-parent-env>
     <envs />
     <ui>bdd</ui>
-    <extra-mocha-options>--compilers js:babel-core/register</extra-mocha-options>
-    <test-kind>TEST_FILE</test-kind>
-    <test-file>$PROJECT_DIR$/test/integration/index.integration.test.js</test-file>
+    <extra-mocha-options>--recursive --compilers ts:ts-node/register</extra-mocha-options>
+    <test-kind>DIRECTORY</test-kind>
+    <test-directory>$PROJECT_DIR$/test</test-directory>
+    <recursive>false</recursive>
     <method />
   </configuration>
 </component>

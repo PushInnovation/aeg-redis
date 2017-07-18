@@ -1,37 +1,52 @@
-import redis from 'redis';
+import * as redis from 'redis';
 import { EventEmitter } from 'events';
-import Promise from 'bluebird';
-import _ from 'lodash';
+import * as BBPromise from 'bluebird';
 import Transaction from './transaction';
 import Batch from './batch';
+import { IRedisKeyOptions } from './types/redis';
 
-Promise.promisifyAll(redis.RedisClient.prototype);
-Promise.promisifyAll(redis.Multi.prototype);
+BBPromise.promisifyAll(redis.RedisClient.prototype);
+BBPromise.promisifyAll(redis.Multi.prototype);
+
+export interface IRedisOptions {
+	host: string;
+	port: number;
+	prefix?: string;
+}
 
 const SCAN_LIMIT = 1000;
 
 class Redis extends EventEmitter {
 
+	private _client: any;
+
+	private _prefix: string;
+
 	/**
 	 * Constructor
-	 * @param {Object} [options]
 	 */
-	constructor (options) {
-
-		options = options || {};
+	constructor (options: IRedisOptions) {
 
 		super();
+
 		this._prefix = options.prefix || '';
 		this._client = redis.createClient(options);
-		this._batch = null;
+
+	}
+
+	/**
+	 * Get the underlying redis client
+	 */
+	get client (): any {
+
+		return this._client;
 
 	}
 
 	/**
 	 * Close the client
-	 * @returns {Promise.<*>}
 	 */
-	async dispose () {
+	public async dispose (): Promise<void> {
 
 		await this._client.quitAsync();
 
@@ -39,14 +54,10 @@ class Redis extends EventEmitter {
 
 	}
 
-	/* transactions */
-
 	/**
 	 * Return the transaction prototype
-	 * @returns {Transaction}
-	 * @constructor
 	 */
-	static get Transaction () {
+	static get Transaction (): typeof Transaction {
 
 		return Transaction;
 
@@ -54,9 +65,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Get a transaction
-	 * @returns {Transaction}
 	 */
-	transaction () {
+	public transaction (): Transaction {
 
 		this._checkDisposed();
 
@@ -66,10 +76,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Watch a key
-	 * @param {string} key
-	 * @returns {Promise.<*>}
 	 */
-	async watch (key) {
+	public async watch (key: string): Promise<void> {
 
 		this._checkDisposed();
 
@@ -77,10 +85,10 @@ class Redis extends EventEmitter {
 
 	}
 
-	/* batch */
-
-	/** Begin a batch of commands **/
-	batch () {
+	/**
+	 * Begin a batch of commands
+	 */
+	public batch (): Batch {
 
 		this._checkDisposed();
 
@@ -88,13 +96,10 @@ class Redis extends EventEmitter {
 
 	}
 
-	/* keys */
-
 	/**
 	 * Key exists
-	 * @param {string} key
 	 */
-	async exists (key) {
+	public async exists (key: string): Promise<boolean> {
 
 		this._checkDisposed();
 
@@ -104,9 +109,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Get a key value
-	 * @param {string} key
 	 */
-	async get (key) {
+	public async get (key: string): Promise<string> {
 
 		this._checkDisposed();
 
@@ -116,11 +120,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Set a key value
-	 * @param {string} key
-	 * @param {string | number} value
-	 * @param {Object} [options]
 	 */
-	async set (key, value, options) {
+	public async set (key: string, value: string | number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -132,12 +133,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Increment an integer value
-	 * @param {string} key
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async incrby (key, value, options) {
+	public async incrby (key: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -149,12 +146,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Increment a float value
-	 * @param {string} key
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async incrbyfloat (key, value, options) {
+	public async incrbyfloat (key: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -166,13 +159,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Increment an integer value in a hash set
-	 * @param {string} key
-	 * @param {string} hashKey
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hincrby (key, hashKey, value, options) {
+	public async hincrby (key: string, hashKey: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -184,13 +172,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Increment a float value in a hash set
-	 * @param {string} key
-	 * @param {string} hashKey
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hincrbyfloat (key, hashKey, value, options) {
+	public async hincrbyfloat (key: string, hashKey: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -202,12 +185,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Hash map set
-	 * @param {string} key
-	 * @param {Object | *[] } hash
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hmset (key, hash, options) {
+	public async hmset (key: string, hash: object, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -219,10 +198,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Get a hash set
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async hgetall (key) {
+	public async hgetall (key: string): Promise<any> {
 
 		this._checkDisposed();
 
@@ -232,10 +209,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Delete a key
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async del (key) {
+	public async del (key: string): Promise<void> {
 
 		this._checkDisposed();
 
@@ -245,12 +220,11 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Add to a set
-	 * @param {string} key
-	 * @param {string | number | *[]} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async sadd (key, value, options) {
+	public async sadd (
+		key: string,
+		value: string | number | Array<string | number>,
+		options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -262,10 +236,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Get a set
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async smembers (key) {
+	public async smembers (key): Promise<string[]> {
 
 		this._checkDisposed();
 
@@ -275,11 +247,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Remove from set
-	 * @param {string} key
-	 * @param {string | number} value
-	 * @return {*}
 	 */
-	async srem (key, value) {
+	public async srem (key: string, value: string | number): Promise<void> {
 
 		this._checkDisposed();
 
@@ -289,10 +258,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Scan and delete keys
-	 * @param {string} pattern
-	 * @return {*}
 	 */
-	async scanDel (pattern) {
+	public async scanDel (pattern: string): Promise<void> {
 
 		this._checkDisposed();
 
@@ -302,7 +269,7 @@ class Redis extends EventEmitter {
 
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
 
-			const keysToDel = _.map(keys, (key) => {
+			const keysToDel = keys.map((key) => {
 
 				return key.replace(this._prefix, '');
 
@@ -316,10 +283,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Scan keys
-	 * @param {string} pattern
-	 * @param {function} delegate
 	 */
-	async scan (pattern, delegate) {
+	public async scan (pattern: string, delegate: (keys: string[]) => Promise<void> | void): Promise<void> {
 
 		this._checkDisposed();
 
@@ -373,10 +338,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Get the remaining time of a key
-	 * @param key
-	 * @return {*}
 	 */
-	async ttl (key) {
+	public async ttl (key): Promise<number> {
 
 		this._checkDisposed();
 
@@ -386,12 +349,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Set the expiry in seconds
-	 * @param {string} key
-	 * @param {Object} [options]
-	 * @return {*}
-	 * @private
 	 */
-	async _checkExpiry (key, options) {
+	private async _checkExpiry (key, options): Promise<void> {
 
 		if (options && options.expire) {
 
@@ -403,10 +362,8 @@ class Redis extends EventEmitter {
 
 	/**
 	 * Check to make sure this transaction is still open
-	 * @returns null
-	 * @private
 	 */
-	_checkDisposed () {
+	private _checkDisposed (): void {
 
 		if (!this._client) {
 

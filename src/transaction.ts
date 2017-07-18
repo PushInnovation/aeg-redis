@@ -1,28 +1,26 @@
-import redis from 'redis';
-import Promise from 'bluebird';
+import Client from './client';
+import { IRedisKeyOptions } from './types/redis';
 
-Promise.promisifyAll(redis.RedisClient.prototype);
-Promise.promisifyAll(redis.Multi.prototype);
+export default class Transaction {
 
-class Transaction {
+	private _client: any;
+
+	private _multi: any | null;
 
 	/**
 	 * Constructor
-	 * @param {Object} client
 	 */
-	constructor (client) {
+	constructor (client: Client) {
 
 		this._client = client;
-		this._multi = client._client.multi();
+		this._multi = client.client.multi();
 
 	}
-
-	/* transactions */
 
 	/**
 	 * Commit a transaction
 	 */
-	async commit () {
+	public async commit (): Promise<void> {
 
 		this._checkDisposed();
 
@@ -41,7 +39,7 @@ class Transaction {
 	/**
 	 * Roll the transaction back
 	 */
-	rollback () {
+	public rollback (): void {
 
 		this._checkDisposed();
 
@@ -53,21 +51,16 @@ class Transaction {
 	/**
 	 * Is a transaction still open
 	 */
-	get isOpen () {
+	public get isOpen (): boolean {
 
 		return !!this._multi;
 
 	}
 
-	/* keys */
-
 	/**
 	 * Set a key value
-	 * @param {string} key
-	 * @param {string | number} value
-	 * @param {Object} [options]
 	 */
-	async set (key, value, options) {
+	public async set (key: string, value: string | number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -79,12 +72,8 @@ class Transaction {
 
 	/**
 	 * Increment an integer value
-	 * @param {string} key
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async incrby (key, value, options) {
+	public async incrby (key: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -96,12 +85,8 @@ class Transaction {
 
 	/**
 	 * Increment a float value
-	 * @param {string} key
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async incrbyfloat (key, value, options) {
+	public async incrbyfloat (key: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -113,13 +98,8 @@ class Transaction {
 
 	/**
 	 * Increment an integer value in a hash set
-	 * @param {string} key
-	 * @param {string} hashKey
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hincrby (key, hashKey, value, options) {
+	public async hincrby (key: string, hashKey: string, value: number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -131,13 +111,8 @@ class Transaction {
 
 	/**
 	 * Increment a float value in a hash set
-	 * @param {string} key
-	 * @param {string} hashKey
-	 * @param {number} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hincrbyfloat (key, hashKey, value, options) {
+	public async hincrbyfloat (key: string, hashKey: string, value: number, options?: IRedisKeyOptions) {
 
 		this._checkDisposed();
 
@@ -149,12 +124,8 @@ class Transaction {
 
 	/**
 	 * Hash map set
-	 * @param {string} key
-	 * @param {Object | *[] } hash
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async hmset (key, hash, options) {
+	public async hmset (key: string, hash: object, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -166,10 +137,8 @@ class Transaction {
 
 	/**
 	 * Delete a key
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async del (key) {
+	public async del (key: string): Promise<void> {
 
 		this._checkDisposed();
 
@@ -179,12 +148,8 @@ class Transaction {
 
 	/**
 	 * Add to a set
-	 * @param {string} key
-	 * @param {string | number | *[]} value
-	 * @param {Object} [options]
-	 * @return {*}
 	 */
-	async sadd (key, value, options) {
+	public async sadd (key: string, value: string | number, options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
@@ -196,11 +161,8 @@ class Transaction {
 
 	/**
 	 * Remove from set
-	 * @param {string} key
-	 * @param {string | number} value
-	 * @return {*}
 	 */
-	async srem (key, value) {
+	public async srem (key: string, value: string | number): Promise<void> {
 
 		this._checkDisposed();
 
@@ -210,12 +172,8 @@ class Transaction {
 
 	/**
 	 * Set the expiry in seconds
-	 * @param {string} key
-	 * @param {Object} [options]
-	 * @return {*}
-	 * @private
 	 */
-	async _checkExpiry (key, options) {
+	private async _checkExpiry (key: string, options?: IRedisKeyOptions): Promise<void> {
 
 		if (options && options.expire) {
 
@@ -227,10 +185,8 @@ class Transaction {
 
 	/**
 	 * Check to make sure this transaction is still open
-	 * @returns null
-	 * @private
 	 */
-	_checkDisposed () {
+	private _checkDisposed (): void {
 
 		if (!this._multi) {
 
@@ -241,5 +197,3 @@ class Transaction {
 	}
 
 }
-
-export default Transaction;

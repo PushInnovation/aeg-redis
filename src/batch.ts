@@ -1,79 +1,77 @@
+import Client from './client';
+
 export default class Batch {
+
+	private _client: Client;
+
+	private _batch: any | null;
 
 	/**
 	 * Constructor
-	 * @param {Object} client
 	 */
-	constructor (client) {
+	constructor (client: Client) {
 
 		this._client = client;
-		this._batch = client._client.batch();
+		this._batch = client.client.batch();
 
 	}
 
 	/**
 	 * Key exists
-	 * @param {string} key
 	 */
-	async exists (key) {
+	public async exists (key: string): Promise<void> {
 
 		this._checkDisposed();
 
-		this._batch.exists(key);
+		this._batch!.exists(key);
 
 	}
 
 	/**
 	 * Get a key value
-	 * @param {string} key
 	 */
-	async get (key) {
+	public async get (key: string): Promise<void> {
 
 		this._checkDisposed();
 
-		this._batch.get(key);
+		this._batch!.get(key);
 
 	}
 
 	/**
 	 * Get a hash set
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async hgetall (key) {
+	public async hgetall (key: string): Promise<void> {
 
 		this._checkDisposed();
 
-		this._batch.hgetall(key);
+		this._batch!.hgetall(key);
 
 	}
 
 	/**
 	 * Get a set
-	 * @param {string} key
-	 * @return {*}
 	 */
-	async smembers (key) {
+	public async smembers (key: string): Promise<void> {
 
 		this._checkDisposed();
 
-		this._batch.smembers(key);
+		this._batch!.smembers(key);
 
 	}
 
 	/**
 	 * Execute a batch of commands
-	 * @return {Promise<Array<Object>>}
 	 */
-	async exec () {
+	public async exec (): Promise<any[]> {
 
 		this._checkDisposed();
 
 		try {
 
-			return await new Promise((resolve, reject) => {
+			return await new Promise<any[]>((resolve, reject) => {
 
-				this._batch.exec((err, res) => {
+				this._batch!.exec((err, res) => {
 
 					if (err) {
 
@@ -103,10 +101,8 @@ export default class Batch {
 
 	/**
 	 * Check to make sure this batch is still open
-	 * @returns null
-	 * @private
 	 */
-	_checkDisposed () {
+	private _checkDisposed (): void {
 
 		if (!this._batch) {
 
