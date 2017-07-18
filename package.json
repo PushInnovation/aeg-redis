@@ -21,6 +21,25 @@
 		"build:coverage": "nyc npm run build:test",
 		"patch": "git reset --hard HEAD && git clean -fd && npm run compile && npm version patch -m \"[ci skip] %s\" && git push origin master && git push origin master --tags && npm publish"
 	},
+	"nyc": {
+		"include": [
+			"src/**/*.ts"
+		],
+		"exclude": [
+			"**/*.d.ts"
+		],
+		"extension": [
+			".ts"
+		],
+		"require": [
+			"ts-node/register"
+		],
+		"reporter": [
+			"json",
+			"html"
+		],
+		"all": true
+	},
 	"devDependencies": {
 		"@types/bluebird": "^3.5.8",
 		"@types/lodash": "^4.14.68",
