@@ -1,14 +1,12 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Test" type="mocha-javascript-test-runner" factoryName="Mocha">
-    <node-interpreter>project</node-interpreter>
-    <node-options />
-    <working-directory>$PROJECT_DIR$</working-directory>
-    <pass-parent-env>true</pass-parent-env>
+  <configuration default="false" name="Test" type="js.build_tools.npm" factoryName="npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="test" />
+    </scripts>
+    <node-interpreter value="project" />
     <envs />
-    <ui>bdd</ui>
-    <extra-mocha-options>--compilers js:babel-core/register</extra-mocha-options>
-    <test-kind>TEST_FILE</test-kind>
-    <test-file>$PROJECT_DIR$/test/integration/index.integration.test.js</test-file>
     <method />
   </configuration>
 </component>

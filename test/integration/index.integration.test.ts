@@ -1,6 +1,6 @@
-import should from 'should';
+import * as should from 'should';
 import Client from '../../src/index';
-import Promise from 'bluebird';
+import * as BBPromise from 'bluebird';
 
 const client = new Client({
 	host: '192.168.99.100',
@@ -33,8 +33,8 @@ describe('#index()', async () => {
 			await batch.get('test-batch-1');
 			await batch.get('test-batch-2');
 			let result = await batch.exec();
-			result.should.be.an.Array;
-			result.length.should.be.equal(2);
+			should(result).be.instanceOf(Array);
+			should.equal(result.length, 2);
 			result[0].should.be.equal('1');
 			result[1].should.be.equal('2');
 
@@ -48,8 +48,8 @@ describe('#index()', async () => {
 			await batch.hgetall('test-batch-1');
 			await batch.hgetall('test-batch-2');
 			result = await batch.exec();
-			result.should.be.an.Array;
-			result.length.should.be.equal(2);
+			should(result).be.instanceOf(Array);
+			should.equal(result.length, 2);
 			result[0].should.be.eql({test: '1'});
 			result[1].should.be.eql({test: '2'});
 
@@ -63,8 +63,8 @@ describe('#index()', async () => {
 			await batch.smembers('test-batch-1');
 			await batch.smembers('test-batch-2');
 			result = await batch.exec();
-			result.should.be.an.Array;
-			result.length.should.be.equal(2);
+			should(result).be.instanceOf(Array)
+			should.equal(result.length, 2);
 			result[0].should.be.eql(['1']);
 			result[1].should.be.eql(['2']);
 
@@ -82,14 +82,14 @@ describe('#index()', async () => {
 			await client.set('test1', 1);
 			const val = await client.get('test1');
 			should.exist(val);
-			val.should.be.equal('1');
+			should.equal(val, 1);
 
 		});
 
 		it('key should exist', async () => {
 
 			const result = await client.exists('test1');
-			result.should.be.ok;
+			should.ok(result);
 
 		});
 
@@ -98,7 +98,7 @@ describe('#index()', async () => {
 			await client.incrby('test1', 1);
 			const val = await client.get('test1');
 			should.exist(val);
-			val.should.be.equal('2');
+			should.equal(val, 2);
 
 		});
 
@@ -107,7 +107,7 @@ describe('#index()', async () => {
 			await client.incrbyfloat('test1', 1.1);
 			const val = await client.get('test1');
 			should.exist(val);
-			val.should.be.equal('3.1');
+			should.equal(val, '3.1');
 
 		});
 
@@ -122,7 +122,7 @@ describe('#index()', async () => {
 		it('key should not exist', async () => {
 
 			const result = await client.exists('test1');
-			result.should.not.be.ok;
+			should(result).be.false;
 
 		});
 
@@ -131,7 +131,7 @@ describe('#index()', async () => {
 			await client.hmset('test1', {test: 1});
 			const val = await client.hgetall('test1');
 			should.exist(val);
-			should(val).be.an.Object;
+			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
 			val.test.should.be.equal('1');
 
@@ -142,9 +142,9 @@ describe('#index()', async () => {
 			await client.hincrby('test1', 'test', 1);
 			const val = await client.hgetall('test1');
 			should.exist(val);
-			should(val).be.an.Object;
+			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
-			val.test.should.be.equal('2');
+			should.equal(val.test, '2');
 
 		});
 
@@ -153,9 +153,9 @@ describe('#index()', async () => {
 			await client.hincrbyfloat('test1', 'test', 1.1);
 			const val = await client.hgetall('test1');
 			should.exist(val);
-			should(val).be.an.Object;
+			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
-			val.test.should.be.equal('3.1');
+			should.equal(val.test, '3.1');
 
 		});
 
@@ -172,7 +172,7 @@ describe('#index()', async () => {
 			await client.hmset('test2', ['test', 1]);
 			const val = await client.hgetall('test2');
 			should.exist(val);
-			should(val).be.an.Object;
+			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
 			val.test.should.be.equal('1');
 
@@ -191,8 +191,8 @@ describe('#index()', async () => {
 			await client.sadd('test1', [1, 2, 3]);
 			const val = await client.smembers('test1');
 			should.exist(val);
-			should(val).be.an.Array;
-			val.length.should.be.equal(3);
+			should(val).be.instanceOf(Array);
+			should.equal(val.length, 3);
 
 		});
 
@@ -201,8 +201,8 @@ describe('#index()', async () => {
 			await client.sadd('test1', 4);
 			const val = await client.smembers('test1');
 			should.exist(val);
-			should(val).be.an.Array;
-			val.length.should.be.equal(4);
+			should(val).be.instanceOf(Array);
+			should.equal(val.length, 4);
 
 		});
 
@@ -211,8 +211,8 @@ describe('#index()', async () => {
 			await client.srem('test1', 1);
 			const val = await client.smembers('test1');
 			should.exist(val);
-			should(val).be.an.Array;
-			val.length.should.be.equal(3);
+			should(val).be.instanceOf(Array);
+			should.equal(val.length, 3);
 
 		});
 
@@ -226,7 +226,7 @@ describe('#index()', async () => {
 
 		it('should set a 2001 key values', async () => {
 
-			await Promise.map([...new Array(2001)].map((_, i) => i), (val) => {
+			await BBPromise.map(Array.apply(null, {length: 2001}).map(Number.call, Number), (val: number) => {
 
 				return client.set('test' + val, val);
 
@@ -240,11 +240,13 @@ describe('#index()', async () => {
 
 			await client.scan('test*', (res) => {
 
+				console.log(res);
+
 				counter += res.length;
 
 			});
 
-			counter.should.be.equal(2001);
+			should.equal(counter, 2001);
 
 		});
 
@@ -260,7 +262,7 @@ describe('#index()', async () => {
 
 			});
 
-			counter.should.be.equal(0);
+			should.equal(counter, 0);
 
 		});
 
@@ -324,12 +326,12 @@ describe('#index()', async () => {
 		it('should begin and rollback', () => {
 
 			const transaction = client.transaction();
-			transaction.isOpen.should.be.ok;
+			should(transaction.isOpen).be.true;
 			transaction.rollback();
 
 			const C = Client.Transaction;
 			const i = new C(client);
-			i.constructor.name.should.be.equal('Transaction');
+			should.equal(i.constructor.name, 'Transaction');
 
 		});
 
@@ -342,7 +344,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.get('test1');
-				val.should.be.equal('1');
+				should.equal(val, '1');
 
 			});
 
@@ -357,7 +359,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.get('test1');
-				val.should.be.equal('1');
+				should.equal(val, '1');
 
 			});
 
@@ -372,7 +374,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.get('test1');
-				val.should.be.equal('1');
+				should.equal(val, '1');
 
 			});
 
@@ -387,7 +389,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.hgetall('test1');
-				val.test.should.be.equal('1');
+				should.equal(val.test, '1');
 
 			});
 
@@ -403,7 +405,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.hgetall('test1');
-				val.test.should.be.equal('2');
+				should.equal(val.test, '2');
 
 			});
 
@@ -419,7 +421,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.hgetall('test1');
-				val.test.should.be.equal('2.1');
+				should.equal(val.test, '2.1');
 
 			});
 
@@ -434,8 +436,8 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.smembers('test1');
-				val.length.should.be.equal(2);
-				val[0].should.be.equal('1');
+				should.equal(val.length, 2);
+				should.equal(val[0], '1');
 
 			});
 
@@ -451,7 +453,7 @@ describe('#index()', async () => {
 			}, async () => {
 
 				const val = await client.smembers('test1');
-				val[0].should.be.equal('2');
+				should.equal(val[0], '2');
 
 			});
 
@@ -591,25 +593,25 @@ async function testTransaction (key, delegate, check) {
 	let transaction = client.transaction();
 	await delegate(transaction);
 	const result1 = await client.exists(key);
-	result1.should.not.be.ok;
+	should(result1).be.false;
 	await transaction.commit();
 	const result2 = await client.exists(key);
-	result2.should.be.ok;
+	should(result2).be.true;
 	await check();
 	transaction = client.transaction();
 	await transaction.del(key);
 	const result3 = await client.exists(key);
-	result3.should.be.ok;
+	should(result3).be.true;
 	await transaction.commit();
 	const result4 = await client.exists(key);
-	result4.should.not.be.ok;
+	should(result4).be.false;
 
 }
 
 async function testExpire () {
 
 	const ttl = await client.ttl('test1');
-	(ttl <= 30 && ttl >= 1).should.be.ok;
+	should(ttl <= 30 && ttl >= 1).be.true;
 	await client.del('test1');
 
 }
@@ -620,7 +622,7 @@ async function testExpireTransaction (delegate) {
 	await delegate(transaction);
 	await transaction.commit();
 	const ttl = await client.ttl('test1');
-	(ttl <= 30 && ttl >= 1).should.be.ok;
+	should(ttl <= 30 && ttl >= 1).be.true;
 	await client.del('test1');
 
 }
