@@ -89,7 +89,7 @@ describe('#index()', async () => {
 		it('key should exist', async () => {
 
 			const result = await client.exists('test1');
-			should.ok(result);
+			should(result).be.true;
 
 		});
 
