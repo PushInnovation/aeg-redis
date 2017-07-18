@@ -1,7 +1,6 @@
 import * as redis from 'redis';
 import { EventEmitter } from 'events';
 import * as BBPromise from 'bluebird';
-import * as _ from 'lodash';
 import Transaction from './transaction';
 import Batch from './batch';
 import { IRedisKeyOptions } from './types/redis';
@@ -270,7 +269,7 @@ class Redis extends EventEmitter {
 
 			self.emit('info', {message: 'redis#scanDel', data: {keys}});
 
-			const keysToDel = _.map(keys, (key) => {
+			const keysToDel = keys.map((key) => {
 
 				return key.replace(this._prefix, '');
 
