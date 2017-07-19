@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Redis client",
   "main": "lib/index.js",
+  "types": "./lib/index.d.ts",
   "author": "Ad Exchange Group",
   "repository": {
     "type": "git",
