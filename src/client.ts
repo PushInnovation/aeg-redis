@@ -55,15 +55,6 @@ class Redis extends EventEmitter {
 	}
 
 	/**
-	 * Return the transaction prototype
-	 */
-	static get Transaction (): typeof Transaction {
-
-		return Transaction;
-
-	}
-
-	/**
 	 * Get a transaction
 	 */
 	public transaction (): Transaction {
