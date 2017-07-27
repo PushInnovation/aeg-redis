@@ -1,6 +1,7 @@
 import Client from './client';
+import { IRedisBatch } from './types/redis';
 
-export default class Batch {
+export default class Batch implements IRedisBatch {
 
 	private _client: Client;
 
@@ -96,15 +97,6 @@ export default class Batch {
 			this._batch = null;
 
 		}
-
-	}
-
-	/**
-	 * Return the client
-	 */
-	protected client (): Client {
-
-		return this._client;
 
 	}
 
