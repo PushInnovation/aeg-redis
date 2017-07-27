@@ -3,7 +3,7 @@ import { IRedisKeyOptions } from './types/redis';
 
 export default class Transaction {
 
-	private _client: any;
+	private _client: Client;
 
 	private _multi: any | null;
 
@@ -167,6 +167,15 @@ export default class Transaction {
 		this._checkDisposed();
 
 		this._multi.srem(key, value);
+
+	}
+
+	/**
+	 * Return the client
+	 */
+	protected client (): Client {
+
+		return this._client;
 
 	}
 

@@ -100,6 +100,15 @@ export default class Batch {
 	}
 
 	/**
+	 * Return the client
+	 */
+	protected client (): Client {
+
+		return this._client;
+
+	}
+
+	/**
 	 * Check to make sure this batch is still open
 	 */
 	private _checkDisposed (): void {
