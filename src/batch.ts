@@ -1,5 +1,5 @@
 import Client from './client';
-import { IRedisBatch } from './types/redis';
+import { IRedisBatch } from './types';
 
 export default class Batch implements IRedisBatch {
 
@@ -14,6 +14,15 @@ export default class Batch implements IRedisBatch {
 
 		this._client = client;
 		this._batch = client.client.batch();
+
+	}
+
+	/**
+	 * Is it disposed
+	 */
+	public get disposed () {
+
+		return !this._batch;
 
 	}
 
@@ -105,7 +114,7 @@ export default class Batch implements IRedisBatch {
 	 */
 	private _checkDisposed (): void {
 
-		if (!this._batch) {
+		if (this.disposed) {
 
 			throw new Error('Batch disposed');
 

@@ -1,5 +1,5 @@
 import Client from './client';
-import { IRedisKeyOptions, IRedisTransaction } from './types/redis';
+import { IRedisKeyOptions, IRedisTransaction } from './types';
 
 export default class Transaction implements IRedisTransaction {
 
@@ -49,11 +49,11 @@ export default class Transaction implements IRedisTransaction {
 	}
 
 	/**
-	 * Is a transaction still open
+	 * Is it disposed
 	 */
-	public get isOpen (): boolean {
+	public get disposed () {
 
-		return !!this._multi;
+		return !this._multi;
 
 	}
 
@@ -188,7 +188,7 @@ export default class Transaction implements IRedisTransaction {
 	 */
 	private _checkDisposed (): void {
 
-		if (!this._multi) {
+		if (this.disposed) {
 
 			throw new Error('Transaction disposed');
 

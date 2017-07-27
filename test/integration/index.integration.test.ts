@@ -330,7 +330,7 @@ describe('#index()', async () => {
 		it('should begin and rollback', () => {
 
 			const transaction = client.transaction();
-			should(transaction.isOpen).be.true;
+			should(transaction.disposed).be.false;
 			transaction.rollback();
 
 		});
