@@ -333,10 +333,6 @@ describe('#index()', async () => {
 			should(transaction.isOpen).be.true;
 			transaction.rollback();
 
-			const C = Client.Transaction;
-			const i = new C(client);
-			should.equal(i.constructor.name, 'Transaction');
-
 		});
 
 		it('should set a key value', async () => {
