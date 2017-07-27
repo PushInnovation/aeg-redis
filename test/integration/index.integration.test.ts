@@ -2,6 +2,10 @@ import * as should from 'should';
 import Client from '../../src/index';
 import * as BBPromise from 'bluebird';
 
+interface ITest {
+	test: string;
+}
+
 const client = new Client({
 	host: '192.168.99.100',
 	port: 32769
@@ -129,18 +133,18 @@ describe('#index()', async () => {
 		it('should set a hash key value', async () => {
 
 			await client.hmset('test1', {test: 1});
-			const val = await client.hgetall('test1');
+			const val = await client.hgetall<ITest>('test1');
 			should.exist(val);
 			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
-			val.test.should.be.equal('1');
+			should(val.test).be.equal('1');
 
 		});
 
 		it('should increment a hash key value', async () => {
 
 			await client.hincrby('test1', 'test', 1);
-			const val = await client.hgetall('test1');
+			const val = await client.hgetall<ITest>('test1');
 			should.exist(val);
 			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
@@ -151,7 +155,7 @@ describe('#index()', async () => {
 		it('should increment a hash key value by float', async () => {
 
 			await client.hincrbyfloat('test1', 'test', 1.1);
-			const val = await client.hgetall('test1');
+			const val = await client.hgetall<ITest>('test1');
 			should.exist(val);
 			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
@@ -170,11 +174,11 @@ describe('#index()', async () => {
 		it('should set a hash key value', async () => {
 
 			await client.hmset('test2', ['test', 1]);
-			const val = await client.hgetall('test2');
+			const val = await client.hgetall<ITest>('test2');
 			should.exist(val);
 			should(val).be.instanceOf(Object);
 			should(val).have.property('test');
-			val.test.should.be.equal('1');
+			should(val.test).be.equal('1');
 
 		});
 
@@ -388,7 +392,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await client.hgetall('test1');
+				const val = await client.hgetall<ITest>('test1');
 				should.equal(val.test, '1');
 
 			});
@@ -404,7 +408,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await client.hgetall('test1');
+				const val = await client.hgetall<ITest>('test1');
 				should.equal(val.test, '2');
 
 			});
@@ -420,7 +424,7 @@ describe('#index()', async () => {
 
 			}, async () => {
 
-				const val = await client.hgetall('test1');
+				const val = await client.hgetall<ITest>('test1');
 				should.equal(val.test, '2.1');
 
 			});
