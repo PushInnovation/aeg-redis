@@ -1,7 +1,7 @@
 import Client from './client';
-import { IRedisKeyOptions } from './types/redis';
+import { IRedisKeyOptions, IRedisTransaction } from './types/redis';
 
-export default class Transaction {
+export default class Transaction implements IRedisTransaction {
 
 	private _client: Client;
 
@@ -167,15 +167,6 @@ export default class Transaction {
 		this._checkDisposed();
 
 		this._multi.srem(key, value);
-
-	}
-
-	/**
-	 * Return the client
-	 */
-	protected client (): Client {
-
-		return this._client;
 
 	}
 
