@@ -199,7 +199,7 @@ class Redis extends EventEmitter {
 	/**
 	 * Get a hash set
 	 */
-	public async hgetall (key: string): Promise<any> {
+	public async hgetall<T> (key: string): Promise<T> {
 
 		this._checkDisposed();
 
