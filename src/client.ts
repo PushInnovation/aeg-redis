@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import * as BBPromise from 'bluebird';
 import Transaction from './transaction';
 import Batch from './batch';
-import { IRedisKeyOptions } from './types/redis';
+import { IRedisClient, IRedisKeyOptions } from './types';
 
 BBPromise.promisifyAll(redis.RedisClient.prototype);
 BBPromise.promisifyAll(redis.Multi.prototype);
@@ -16,7 +16,7 @@ export interface IRedisOptions {
 
 const SCAN_LIMIT = 1000;
 
-class Redis extends EventEmitter {
+class Redis extends EventEmitter implements IRedisClient {
 
 	private _client: any;
 
@@ -40,6 +40,15 @@ class Redis extends EventEmitter {
 	get client (): any {
 
 		return this._client;
+
+	}
+
+	/**
+	 * Is it disposed
+	 */
+	public get disposed () {
+
+		return !this._client;
 
 	}
 
@@ -356,7 +365,7 @@ class Redis extends EventEmitter {
 	 */
 	private _checkDisposed (): void {
 
-		if (!this._client) {
+		if (this.disposed) {
 
 			throw new Error('Client disposed');
 
