@@ -149,7 +149,10 @@ export default class Transaction implements IRedisTransaction {
 	/**
 	 * Add to a set
 	 */
-	public async sadd (key: string, value: string | number, options?: IRedisKeyOptions): Promise<void> {
+	public async sadd (
+		key: string,
+		value: string | number | Array<string | number>,
+		options?: IRedisKeyOptions): Promise<void> {
 
 		this._checkDisposed();
 
