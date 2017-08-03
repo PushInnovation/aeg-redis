@@ -29,7 +29,7 @@ export default class Batch implements IRedisBatch {
 	/**
 	 * Key exists
 	 */
-	public async exists (key: string): Promise<void> {
+	public exists (key: string): void {
 
 		this._checkDisposed();
 
@@ -40,7 +40,7 @@ export default class Batch implements IRedisBatch {
 	/**
 	 * Get a key value
 	 */
-	public async get (key: string): Promise<void> {
+	public get (key: string): void {
 
 		this._checkDisposed();
 
@@ -51,7 +51,7 @@ export default class Batch implements IRedisBatch {
 	/**
 	 * Get a hash set
 	 */
-	public async hgetall (key: string): Promise<void> {
+	public hgetall (key: string): void {
 
 		this._checkDisposed();
 
@@ -62,7 +62,7 @@ export default class Batch implements IRedisBatch {
 	/**
 	 * Get a set
 	 */
-	public async smembers (key: string): Promise<void> {
+	public smembers (key: string): void {
 
 		this._checkDisposed();
 
