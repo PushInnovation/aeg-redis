@@ -34,8 +34,8 @@ describe('#index()', async () => {
 			await client.set('test-batch-2', 2);
 
 			let batch = client.batch();
-			await batch.get('test-batch-1');
-			await batch.get('test-batch-2');
+			batch.get('test-batch-1');
+			batch.get('test-batch-2');
 			let result = await batch.exec();
 			should(result).be.instanceOf(Array);
 			should.equal(result.length, 2);
@@ -49,8 +49,8 @@ describe('#index()', async () => {
 			await client.hmset('test-batch-2', {test: 2});
 
 			batch = client.batch();
-			await batch.hgetall('test-batch-1');
-			await batch.hgetall('test-batch-2');
+			batch.hgetall('test-batch-1');
+			batch.hgetall('test-batch-2');
 			result = await batch.exec();
 			should(result).be.instanceOf(Array);
 			should.equal(result.length, 2);
@@ -64,8 +64,8 @@ describe('#index()', async () => {
 			await client.sadd('test-batch-2', 2);
 
 			batch = client.batch();
-			await batch.smembers('test-batch-1');
-			await batch.smembers('test-batch-2');
+			batch.smembers('test-batch-1');
+			batch.smembers('test-batch-2');
 			result = await batch.exec();
 			should(result).be.instanceOf(Array);
 			should.equal(result.length, 2);
