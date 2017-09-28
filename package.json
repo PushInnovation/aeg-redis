@@ -1,5 +1,5 @@
 {
-  "name": "@adexchange/aeg-redis",
+  "name": "@push_innovation/aeg-redis",
   "version": "0.0.1",
   "description": "Redis client",
   "main": "lib/index.js",
@@ -7,7 +7,7 @@
   "author": "Ad Exchange Group",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AdExchangeGrp/aeg-redis.git"
+    "url": "https://github.com/pushinnovation/aeg-redis.git"
   },
   "license": "UNLICENSED",
   "scripts": {
