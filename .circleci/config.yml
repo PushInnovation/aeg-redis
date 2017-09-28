@@ -4,6 +4,10 @@ jobs:
     working_directory: ~/src
     docker:
       - image: $DOCKER_BUILD_IMAGE
+    branches:
+      only:
+        - master
+        - dev
     steps:
       - checkout
       - restore_cache:
